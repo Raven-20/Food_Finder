@@ -1,0 +1,90 @@
+.search-section {
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .search-header h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .search-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  
+  .input-wrapper {
+    position: relative;
+    flex: 1;
+  }
+  
+  .ingredient-input {
+    padding-left: 2rem;
+  }
+  
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+  }
+  
+  .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .filter-popover h4 {
+    font-weight: 600;
+  }
+  
+  .filter-popover p {
+    font-size: 0.875rem;
+    color: #777;
+  }
+  
+  .checkboxes {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .ingredient-tags,
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    align-items: center;
+  }
+  
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .remove-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    cursor: pointer;
+  }
+  
