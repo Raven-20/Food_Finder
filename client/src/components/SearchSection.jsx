@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import "../styles/SearchSection.css";
 import { Search, X, Plus, Filter } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Badge } from "./ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
