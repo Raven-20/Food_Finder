@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import SearchSection from "../components/SearchSection";  
@@ -6,6 +7,8 @@ import RecipeGrid from "../components/RecipeGrid";
 import "../styles/HomePage.css";
 
 const HomePage = () => {
+  const navigate = useNavigate(); // ✅ Initialize navigation
+
   const [ingredients, setIngredients] = useState([]);
   const [dietaryFilters, setDietaryFilters] = useState([
     { id: "1", name: "Vegetarian", active: false },
@@ -18,7 +21,7 @@ const HomePage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const mockRecipes = [/* ... (same as your original mockRecipes array) ... */];
+  const mockRecipes = [/* ... your mock recipes here ... */];
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -59,8 +62,8 @@ const HomePage = () => {
             <h1 className="logo">Food Finder</h1>
           </div>
           <div className="auth-buttons">
-            <button>Sign In</button>
-            <button className="sign-up">Sign Up</button>
+            <button onClick={() => navigate("/signin")}>Sign In</button> {/* ✅ Navigate to Sign In */}
+            <button className="sign-up" onClick={() => navigate("/signup")}>Sign Up</button> {/* ✅ Navigate to Sign Up */}
           </div>
         </div>
       </header>
