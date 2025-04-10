@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/RecipeCard.css";
 
 import {
@@ -19,10 +19,58 @@ const RecipeCard = ({
   cookingTime = 30,
   dietaryTags = ["Vegetarian", "Gluten-Free"],
   onViewDetails = () => {},
-  onSave = () => {},
-  isSaved = false,
-  loggedIn = false, // NEW PROP
+  loggedIn = false, // NEW PROP to track if the user is logged in
+  userId = "", // NEW PROP for userId (from the logged-in user)
 }) => {
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Use an effect hook to check if the recipe is saved for the logged-in user
+  useEffect(() => {
+    if (loggedIn) {
+      // Fetch saved recipes from the backend (assumed API)
+      fetchSavedRecipes();
+    }
+  }, [loggedIn]);
+
+  const fetchSavedRecipes = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}/saved-recipes`);
+      const savedRecipes = await response.json();
+      if (savedRecipes.includes(id)) {
+        setIsSaved(true); // Update the state if the recipe is saved
+      }
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+    }
+  };
+
+  // Function to handle saving the recipe
+  const handleSave = async () => {
+    if (!loggedIn) {
+      alert("Please log in to save recipes");
+      return;
+    }
+
+    try {
+      const method = isSaved ? "DELETE" : "POST";
+      const response = await fetch(`/api/users/${userId}/saved-recipes`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recipeId: id }),
+      });
+
+      if (response.ok) {
+        setIsSaved(!isSaved); // Toggle the save state
+      } else {
+        console.error("Failed to save recipe");
+      }
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+    }
+  };
+
   return (
     <Card className="recipe-card">
       <div className="image-container">
@@ -71,7 +119,7 @@ const RecipeCard = ({
           <Button
             variant={isSaved ? "default" : "ghost"}
             size="sm"
-            onClick={() => onSave(id)}
+            onClick={handleSave}
             className={`flex items-center gap-1 ${
               isSaved ? "bg-pink-500 hover:bg-pink-600 text-white" : ""
             }`}
