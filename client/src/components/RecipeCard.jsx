@@ -21,6 +21,7 @@ const RecipeCard = ({
   onViewDetails = () => {},
   onSave = () => {},
   isSaved = false,
+  loggedIn = false, // NEW PROP
 }) => {
   return (
     <Card className="recipe-card">
@@ -66,15 +67,19 @@ const RecipeCard = ({
           Details
         </Button>
 
-        <Button
-          variant={isSaved ? "default" : "ghost"}
-          size="sm"
-          onClick={() => onSave(id)}
-          className={`flex items-center gap-1 ${isSaved ? "bg-pink-500 hover:bg-pink-600 text-white" : ""}`}
-        >
-          <Heart className={`h-4 w-4 ${isSaved ? "fill-white" : ""}`} />
-          {isSaved ? "Saved" : "Save"}
-        </Button>
+        {loggedIn && (
+          <Button
+            variant={isSaved ? "default" : "ghost"}
+            size="sm"
+            onClick={() => onSave(id)}
+            className={`flex items-center gap-1 ${
+              isSaved ? "bg-pink-500 hover:bg-pink-600 text-white" : ""
+            }`}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? "fill-white" : ""}`} />
+            {isSaved ? "Saved" : "Save"}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

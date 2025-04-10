@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
-import SearchSection from "../components/SearchSection";  
-import RecipeGrid from "../components/RecipeGrid"; 
+import { Search, User } from "lucide-react"; // User icon for profile
+import SearchSection from "../components/SearchSection";
+import RecipeGrid from "../components/RecipeGrid";
 import "../styles/HomePage.css";
 
 const HomePage = () => {
-  const navigate = useNavigate(); // ✅ Initialize navigation
+  const navigate = useNavigate();
 
   const [ingredients, setIngredients] = useState([]);
   const [dietaryFilters, setDietaryFilters] = useState([
@@ -21,7 +21,15 @@ const HomePage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const mockRecipes = [/* ... your mock recipes here ... */];
+  const [userEmail, setUserEmail] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+
+  const mockRecipes = [/* mock recipe objects */];
+
+  useEffect(() => {
+    const email = localStorage.getItem("userEmail");
+    if (email) setUserEmail(email);
+  }, []); // This will run once when the component mounts
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -53,6 +61,13 @@ const HomePage = () => {
     setDietaryFilters(dietaryFilters.map((filter) => ({ ...filter, active: false })));
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    setUserEmail("");
+    setIsModalOpen(false);
+    navigate("/"); // Redirect to the homepage after logging out
+  };
+
   return (
     <div>
       <header className="header">
@@ -62,8 +77,26 @@ const HomePage = () => {
             <h1 className="logo">Food Finder</h1>
           </div>
           <div className="auth-buttons">
-            <button onClick={() => navigate("/signin")}>Sign In</button> {/* ✅ Navigate to Sign In */}
-            <button className="sign-up" onClick={() => navigate("/signup")}>Sign Up</button> {/* ✅ Navigate to Sign Up */}
+            {userEmail ? (
+              <div className="profile-section">
+                <User
+                  className="profile-icon"
+                  onClick={() => setIsModalOpen(!isModalOpen)}
+                />
+                {isModalOpen && (
+                  <div className="profile-modal">
+                    <p>{userEmail}</p>
+                    <button onClick={() => alert("Settings modal placeholder")}>Settings</button>
+                    <button onClick={handleLogout}>Sign Out</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <button onClick={() => navigate("/signin")}>Sign In</button>
+                <button className="sign-up" onClick={() => navigate("/signup")}>Sign Up</button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -91,7 +124,11 @@ const HomePage = () => {
         />
 
         {hasSearched ? (
-          <RecipeGrid recipes={recipes} isLoading={isSearching} />
+          <RecipeGrid
+            recipes={recipes}
+            isLoading={isSearching}
+            isAuthenticated={!!userEmail}
+          />
         ) : (
           <div className="placeholder">
             <img

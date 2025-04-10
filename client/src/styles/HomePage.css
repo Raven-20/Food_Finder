@@ -62,6 +62,57 @@ html {
   background-color: #4338ca;
 }
 
+/* Profile Menu */
+.profile-menu {
+  position: relative;
+}
+
+.profile-icon {
+  width: 32px;
+  height: 32px;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.profile-icon:hover {
+  transform: scale(1.1);
+}
+
+.profile-modal {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  z-index: 10;
+  width: 200px;
+  text-align: left;
+}
+
+.profile-modal p {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.profile-modal button {
+  width: 100%;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.profile-modal button:hover {
+  background-color: #dc2626;
+}
+
 /* Hero Section */
 .hero {
   text-align: center;
