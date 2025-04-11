@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "../styles/RecipeDetail.css";
 import "../styles/card.css";
 import {
@@ -32,44 +33,30 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 
-const RecipeDetail = ({
-  id = "1",
-  title = "Vegetable Stir Fry with Tofu",
-  image = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
-  matchPercentage = 85,
-  cookingTime = 30,
-  servings = 4,
-  ingredients = [
-    { name: "Tofu", amount: "14", unit: "oz" },
-    { name: "Bell Peppers", amount: "2", unit: "medium" },
-    { name: "Broccoli", amount: "1", unit: "cup" },
-    { name: "Carrots", amount: "2", unit: "medium" },
-    { name: "Soy Sauce", amount: "3", unit: "tbsp" },
-    { name: "Garlic", amount: "3", unit: "cloves" },
-    { name: "Ginger", amount: "1", unit: "tbsp" },
-    { name: "Vegetable Oil", amount: "2", unit: "tbsp" },
-  ],
-  instructions = [
-    { step: 1, description: "Press tofu to remove excess water, then cut into 1-inch cubes." },
-    { step: 2, description: "Chop all vegetables into bite-sized pieces." },
-    { step: 3, description: "Heat oil in a large wok or skillet over medium-high heat." },
-    { step: 4, description: "Add tofu and cook until golden brown on all sides, about 5 minutes." },
-    { step: 5, description: "Remove tofu and set aside. Add garlic and ginger to the pan and stir for 30 seconds." },
-    { step: 6, description: "Add vegetables and stir-fry for 5-7 minutes until crisp-tender." },
-    { step: 7, description: "Return tofu to the pan, add soy sauce, and toss to combine." },
-    { step: 8, description: "Cook for another 2 minutes until everything is heated through." },
-  ],
-  dietaryTags = ["Vegetarian", "Dairy-Free", "Low-Carb"],
-  isLoggedIn = true,
-  isSaved = false,
-  onSave = () => {},
-  onShare = () => {},
-  onPrint = () => {},
-  onClose = () => {},
-}) => {
-  const [saved, setSaved] = useState(isSaved);
+const RecipeDetail = ({ id, isLoggedIn, onSave, onShare, onPrint, onClose }) => {
+  const [recipe, setRecipe] = useState(null);
+  const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  // Fetch the recipe data from the backend
+  useEffect(() => {
+    const fetchRecipeData = async () => {
+      try {
+        const response = await axios.get(`/api/recipe/${id}`);
+        setRecipe(response.data);
+        setSaved(response.data.isSaved); // Assuming your data has `isSaved` field
+      } catch (error) {
+        console.error("Error fetching recipe data:", error);
+      }
+    };
+
+    fetchRecipeData();
+  }, [id]);
+
+  if (!recipe) {
+    return <div>Loading...</div>;
+  }
 
   const handleSave = () => {
     setSaved(!saved);
@@ -92,10 +79,10 @@ const RecipeDetail = ({
   return (
     <div className="recipe-detail-container">
       <div className="image-wrapper">
-        <img src={image} alt={title} className="recipe-image" />
+        <img src={recipe.image} alt={recipe.title} className="recipe-image" />
         <div className="match-percentage">
           <Badge variant="secondary" className="bg-white/80 text-black">
-            {matchPercentage}% Match
+            {recipe.matchPercentage}% Match
           </Badge>
         </div>
       </div>
@@ -103,9 +90,9 @@ const RecipeDetail = ({
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h1 className="text-2xl font-bold">{title}</h1>
+            <h1 className="text-2xl font-bold">{recipe.title}</h1>
             <div className="flex flex-wrap gap-2 mt-2">
-              {dietaryTags.map((tag, index) => (
+              {recipe.dietaryTags.map((tag, index) => (
                 <Badge key={index} variant="outline">
                   {tag}
                 </Badge>
@@ -150,11 +137,11 @@ const RecipeDetail = ({
         <div className="flex items-center gap-6 mb-6">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-muted-foreground" />
-            <span>{cookingTime} mins</span>
+            <span>{recipe.cookingTime} mins</span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-muted-foreground" />
-            <span>{servings} servings</span>
+            <span>{recipe.servings} servings</span>
           </div>
         </div>
 
@@ -169,11 +156,11 @@ const RecipeDetail = ({
             <Card>
               <CardHeader>
                 <CardTitle>Ingredients</CardTitle>
-                <CardDescription>For {servings} servings</CardDescription>
+                <CardDescription>For {recipe.servings} servings</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {ingredients.map((ingredient, index) => (
+                  {recipe.ingredients.map((ingredient, index) => (
                     <li key={index} className="ingredient-item">
                       <span>{ingredient.name}</span>
                       <span className="text-muted-foreground">
@@ -193,7 +180,7 @@ const RecipeDetail = ({
               </CardHeader>
               <CardContent>
                 <ol className="space-y-4">
-                  {instructions.map((instruction) => (
+                  {recipe.instructions.map((instruction) => (
                     <li key={instruction.step} className="flex gap-4">
                       <div className="step-number">{instruction.step}</div>
                       <div className="flex-1 pt-1">{instruction.description}</div>

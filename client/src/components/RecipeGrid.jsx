@@ -1,92 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/RecipeGrid.css";
 import RecipeCard from "./RecipeCard";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "./ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Badge } from "./ui/badge";
 
+// Update this with your actual API URL - typically if running locally:
+const API_URL = "http://localhost:5000/api/recipes"; // or whatever port your backend runs on
+const SAVED_RECIPES_URL = "http://localhost:5000/api/savedrecipes";
 
-const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
+const RecipeGrid = ({
+  recipes = [],
+  isLoading = false,
+  error = "",
+  loggedIn = false,
+  userId = "",
+}) => {
   const [sortBy, setSortBy] = useState("match");
-  const [filterTime, setFilterTime] = useState([60]);
+  const [filterTime, setFilterTime] = useState([120]); // Set to max to show all recipes by default
   const [activeView, setActiveView] = useState("grid");
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [backendRecipes, setBackendRecipes] = useState([]);
+  const [fetching, setFetching] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
-  const mockRecipes = [
-    {
-      id: "1",
-      title: "Spaghetti Carbonara",
-      image:
-        "https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=800&q=80",
-      matchPercentage: 95,
-      cookingTime: 30,
-      difficulty: "Easy",
-      dietaryTags: ["Italian", "Pasta"],
-    },
-    {
-      id: "2",
-      title: "Vegetable Stir Fry",
-      image:
-        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
-      matchPercentage: 85,
-      cookingTime: 25,
-      difficulty: "Easy",
-      dietaryTags: ["Vegetarian", "Asian"],
-    },
-    {
-      id: "3",
-      title: "Chicken Tikka Masala",
-      image:
-        "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&q=80",
-      matchPercentage: 80,
-      cookingTime: 45,
-      difficulty: "Medium",
-      dietaryTags: ["Indian", "Spicy"],
-    },
-    {
-      id: "4",
-      title: "Avocado Toast",
-      image:
-        "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=800&q=80",
-      matchPercentage: 75,
-      cookingTime: 10,
-      difficulty: "Easy",
-      dietaryTags: ["Vegetarian", "Breakfast"],
-    },
-    {
-      id: "5",
-      title: "Beef Lasagna",
-      image:
-        "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=800&q=80",
-      matchPercentage: 70,
-      cookingTime: 90,
-      difficulty: "Hard",
-      dietaryTags: ["Italian", "Beef"],
-    },
-    {
-      id: "6",
-      title: "Greek Salad",
-      image:
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&q=80",
-      matchPercentage: 65,
-      cookingTime: 15,
-      difficulty: "Easy",
-      dietaryTags: ["Vegetarian", "Mediterranean"],
-    },
-  ];
+  // Fetch recipes from backend API
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      setFetching(true);
+      try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Fetched recipes:", data);
+        
+        // Transform data if needed to match expected format
+        const formattedData = data.map(recipe => ({
+          id: recipe._id || recipe.id, // MongoDB uses _id by default
+          title: recipe.title,
+          image: recipe.image,
+          matchPercentage: recipe.matchPercentage || 80, // Default if not provided
+          cookingTime: recipe.cookingTime || 30, // Default if not provided
+          difficulty: recipe.difficulty || "Medium",
+          dietaryTags: recipe.dietaryTags || []
+        }));
+        
+        setBackendRecipes(formattedData);
+      } catch (error) {
+        console.error("Error fetching recipes:", error);
+        setFetchError("Failed to fetch recipes. Please try again later.");
+      } finally {
+        setFetching(false);
+      }
+    };
+  
+    fetchRecipes();
+  }, []);  // Empty dependency array means it runs once when component mounts
 
-  const displayRecipes = recipes.length > 0 ? recipes : mockRecipes;
+  // Fetch saved recipes when logged in
+  useEffect(() => {
+    if (loggedIn && userId) {
+      const fetchSavedRecipes = async () => {
+        try {
+          // Adjust this endpoint to match your backend structure
+          const response = await fetch(`${SAVED_RECIPES_URL}/${userId}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log("Fetched saved recipes:", data);
+          
+          // Assuming your savedrecipes collection returns recipe IDs associated with the user
+          const recipeIds = data.map(item => item.recipeId || item._id);
+          setSavedRecipes(recipeIds);
+        } catch (error) {
+          console.error("Error fetching saved recipes:", error);
+        }
+      };
+      
+      fetchSavedRecipes();
+    }
+  }, [loggedIn, userId]);
+
+  const displayRecipes = backendRecipes.length > 0 ? backendRecipes : recipes;
 
   const sortedRecipes = [...displayRecipes].sort((a, b) => {
     if (sortBy === "match") return b.matchPercentage - a.matchPercentage;
@@ -94,46 +98,39 @@ const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
     return a.title.localeCompare(b.title);
   });
 
-  const filteredRecipes = sortedRecipes.filter(
-    (recipe) => recipe.cookingTime <= filterTime[0]
-  );
+  const filteredRecipes = sortedRecipes.filter((recipe) => {
+    // Only apply time filter if it's been explicitly set by the user (less than max value)
+    const matchesTime = filterTime[0] >= 120 ? true : recipe.cookingTime <= filterTime[0];
+    const matchesSearch =
+      !searchTerm ||
+      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (recipe.dietaryTags && recipe.dietaryTags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+    return matchesTime && matchesSearch;
+  });
 
   const handleTimeFilterChange = (value) => setFilterTime(value);
 
-  if (isLoading) {
+  if (fetching || isLoading) {
     return (
       <div className="recipe-grid-container">
-        <div className="recipe-grid-header">
-          <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="recipe-grid">
-          {Array(6)
-            .fill(0)
-            .map((_, i) => (
-              <div key={i} className="recipe-card-skeleton">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <div className="flex space-x-2">
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                </div>
-              </div>
-            ))}
+        <div className="text-center py-10">
+          <h3 className="text-xl font-semibold mb-2">Loading Recipes...</h3>
+          <p className="text-muted-foreground">Please wait while we find delicious recipes for you.</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (fetchError || error) {
     return (
       <div className="recipe-grid-container">
         <div className="text-center py-10">
           <h3 className="text-xl font-semibold text-destructive mb-2">
             Error Loading Recipes
           </h3>
-          <p className="text-muted-foreground">{error}</p>
+          <p className="text-muted-foreground">{fetchError || error}</p>
         </div>
       </div>
     );
@@ -169,10 +166,20 @@ const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
 
             <div className="recipe-grid-controls">
               <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  placeholder="Search by ingredient or recipe"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="p-2 border rounded"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">Max Time:</span>
                 <div className="w-[150px]">
                   <Slider
-                    defaultValue={[60]}
+                    defaultValue={[120]}
                     max={120}
                     step={5}
                     value={filterTime}
@@ -204,12 +211,23 @@ const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
                 Under {filterTime[0]} minutes
               </Badge>
             )}
+            {searchTerm && (
+              <Badge variant="outline" className="mr-2">
+                Search: "{searchTerm}"
+              </Badge>
+            )}
           </div>
 
           <TabsContent value="grid">
             <div className="recipe-grid">
               {filteredRecipes.map((recipe) => (
-                <RecipeCard key={recipe.id} {...recipe} />
+                <RecipeCard
+                  key={recipe.id || recipe._id}
+                  {...recipe}
+                  isSaved={savedRecipes.includes(recipe.id || recipe._id)}
+                  loggedIn={loggedIn}
+                  userId={userId}
+                />
               ))}
             </div>
           </TabsContent>
@@ -217,7 +235,7 @@ const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
           <TabsContent value="list">
             <div className="flex flex-col space-y-4">
               {filteredRecipes.map((recipe) => (
-                <div key={recipe.id} className="recipe-list-item">
+                <div key={recipe.id || recipe._id} className="recipe-list-item">
                   <div className="recipe-list-image">
                     <img
                       src={recipe.image}
@@ -238,7 +256,7 @@ const RecipeGrid = ({ recipes = [], isLoading = false, error = "" }) => {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {recipe.dietaryTags.map((tag) => (
+                      {recipe.dietaryTags && recipe.dietaryTags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs">
                           {tag}
                         </Badge>

@@ -25,6 +25,28 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// Recipe Schema
+const recipeSchema = new mongoose.Schema({
+  title: String,
+  image: String,
+  matchPercentage: Number,
+  cookingTime: Number,
+  servings: Number,
+  ingredients: [{ name: String, amount: String, unit: String }],
+  instructions: [{ step: Number, description: String }],
+  dietaryTags: [String]
+});
+
+const Recipe = mongoose.model("Recipe", recipeSchema);
+
+// Saved Recipe Schema - tracks saved recipes for each user
+const savedRecipeSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  recipeId: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe", required: true },
+});
+
+const SavedRecipe = mongoose.model("SavedRecipe", savedRecipeSchema);
+
 // SignUp Route
 app.post("/api/signup", async (req, res) => {
   const { email, password } = req.body;
@@ -66,6 +88,67 @@ app.post("/api/signin", async (req, res) => {
     res.status(200).json({ message: "Signed in successfully", token });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get Recipe by ID
+app.get("/api/recipe/:id", async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    res.status(200).json(recipe);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving recipe" });
+  }
+});
+
+// Get Saved Recipes for a User
+app.get("/api/users/:userId/saved-recipes", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const savedRecipes = await SavedRecipe.find({ userId })
+      .populate("recipeId")
+      .select("recipeId");
+
+    res.status(200).json(savedRecipes.map(saved => saved.recipeId));
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving saved recipes" });
+  }
+});
+
+// Save Recipe to User's Saved Recipes
+app.post("/api/users/:userId/save-recipe", async (req, res) => {
+  const { userId } = req.params;
+  const { recipeId } = req.body;
+
+  try {
+    // Check if the recipe is already saved
+    const existingSavedRecipe = await SavedRecipe.findOne({ userId, recipeId });
+    if (existingSavedRecipe) return res.status(400).json({ message: "Recipe already saved" });
+
+    // Save the recipe
+    const savedRecipe = new SavedRecipe({ userId, recipeId });
+    await savedRecipe.save();
+
+    res.status(201).json({ message: "Recipe saved successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error saving recipe" });
+  }
+});
+
+// Remove Recipe from User's Saved Recipes
+app.delete("/api/users/:userId/remove-saved-recipe", async (req, res) => {
+  const { userId } = req.params;
+  const { recipeId } = req.body;
+
+  try {
+    const removedRecipe = await SavedRecipe.findOneAndDelete({ userId, recipeId });
+    if (!removedRecipe) return res.status(404).json({ message: "Saved recipe not found" });
+
+    res.status(200).json({ message: "Recipe removed from saved list" });
+  } catch (err) {
+    res.status(500).json({ message: "Error removing saved recipe" });
   }
 });
 
