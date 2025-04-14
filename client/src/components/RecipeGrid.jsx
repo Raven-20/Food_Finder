@@ -164,19 +164,8 @@ const RecipeGrid = ({
               <TabsTrigger value="list">List View</TabsTrigger>
             </TabsList>
 
-            <div className="recipe-grid-controls">
+            <div className="recipe-grid-controls">              
               <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  placeholder="Search by ingredient or recipe"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="p-2 border rounded"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium">Max Time:</span>
                 <div className="w-[150px]">
                   <Slider
                     defaultValue={[120]}
@@ -186,7 +175,6 @@ const RecipeGrid = ({
                     onValueChange={handleTimeFilterChange}
                   />
                 </div>
-                <span className="text-sm">{filterTime[0]} min</span>
               </div>
 
               <Select value={sortBy} onValueChange={setSortBy}>
