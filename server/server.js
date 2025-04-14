@@ -102,6 +102,27 @@ app.get("/api/recipe/:id", async (req, res) => {
   }
 });
 
+// Get All Recipes
+app.get("/api/recipes", async (req, res) => {
+  try {
+    const recipes = await Recipe.find();
+    res.status(200).json(recipes);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching recipes" });
+  }
+});
+
+// Get Recipe by ID
+app.get("/api/recipes/:id", async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    res.status(200).json(recipe);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving recipe" });
+  }
+});
+
 // Get Saved Recipes for a User
 app.get("/api/users/:userId/saved-recipes", async (req, res) => {
   const { userId } = req.params;
