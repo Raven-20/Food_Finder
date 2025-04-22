@@ -19,15 +19,14 @@ const RecipeCard = ({
   cookingTime = 30,
   dietaryTags = ["Vegetarian", "Gluten-Free"],
   onViewDetails = () => {},
-  loggedIn = false, // NEW PROP to track if the user is logged in
-  userId = "", // NEW PROP for userId (from the logged-in user)
+  loggedIn = false,
+  userId = "",
 }) => {
   const [isSaved, setIsSaved] = useState(false);
 
   // Use an effect hook to check if the recipe is saved for the logged-in user
   useEffect(() => {
     if (loggedIn) {
-      // Fetch saved recipes from the backend (assumed API)
       fetchSavedRecipes();
     }
   }, [loggedIn]);
@@ -37,7 +36,7 @@ const RecipeCard = ({
       const response = await fetch(`/api/users/${userId}/saved-recipes`);
       const savedRecipes = await response.json();
       if (savedRecipes.includes(id)) {
-        setIsSaved(true); // Update the state if the recipe is saved
+        setIsSaved(true);
       }
     } catch (error) {
       console.error("Error fetching saved recipes:", error);
@@ -62,7 +61,7 @@ const RecipeCard = ({
       });
 
       if (response.ok) {
-        setIsSaved(!isSaved); // Toggle the save state
+        setIsSaved(!isSaved);
       } else {
         console.error("Failed to save recipe");
       }
@@ -72,59 +71,31 @@ const RecipeCard = ({
   };
 
   return (
-    <Card className="recipe-card">
-      <div className="image-container">
-        <img
-          src={image}
-          alt={title}
-          className="recipe-image"
-        />
-        <div className="match-badge">
-          <Badge className="match-badge-content">
-            {matchPercentage}% Match
-          </Badge>
-        </div>
-      </div>
-
-      <CardHeader className="pb-2">
-        <h3 className="text-xl font-semibold line-clamp-2">{title}</h3>
-        <div className="flex items-center text-sm text-gray-500">
-          <Clock className="h-4 w-4 mr-1" />
+    <Card>
+      <CardHeader>
+        <img src={image} alt={title} className="recipe-image" />
+        <Badge>{matchPercentage}% Match</Badge>
+      </CardHeader>
+      <CardContent>
+        <h2>{title}</h2>
+        <div className="flex items-center">
+          <Clock className="icon" />
           <span>{cookingTime} mins</span>
         </div>
-      </CardHeader>
-
-      <CardContent className="pb-2">
-        <div className="flex flex-wrap gap-1">
+        <div className="tags">
           {dietaryTags.map((tag, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
+            <Badge key={index}>{tag}</Badge>
           ))}
         </div>
       </CardContent>
-
-      <CardFooter className="flex justify-between pt-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onViewDetails(id)}
-          className="flex items-center gap-1"
-        >
-          <Eye className="h-4 w-4" />
+      <CardFooter>
+        <Button onClick={() => onViewDetails(id)} className="flex items-center gap-1">
+          <Eye className="icon" />
           Details
         </Button>
-
         {loggedIn && (
-          <Button
-            variant={isSaved ? "default" : "ghost"}
-            size="sm"
-            onClick={handleSave}
-            className={`flex items-center gap-1 ${
-              isSaved ? "bg-pink-500 hover:bg-pink-600 text-white" : ""
-            }`}
-          >
-            <Heart className={`h-4 w-4 ${isSaved ? "fill-white" : ""}`} />
+          <Button onClick={handleSave} className="flex items-center gap-1">
+            <Heart className="icon" />
             {isSaved ? "Saved" : "Save"}
           </Button>
         )}

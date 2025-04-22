@@ -1,26 +1,25 @@
-// server/models/Recipe.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const recipeSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  image: String,  // Changed from imageUrl to image to match the previous format
-  matchPercentage: { type: Number, required: true },
-  cookingTime: { type: Number, required: true },
-  difficulty: { type: String, required: true },
+  title: String,
+  image: String,
+  cookingTime: Number,
+  servings: Number,
+  matchPercentage: Number,
   dietaryTags: [String],
   ingredients: [
     {
-      name: { type: String, required: true },
-      amount: { type: String, required: true },
-      unit: { type: String, required: true }
-    }
+      name: String,
+      amount: Number,
+      unit: String,
+    },
   ],
   instructions: [
     {
-      step: { type: Number, required: true },
-      description: { type: String, required: true }
-    }
-  ]
-}, { timestamps: true });
+      step: Number,
+      description: String,
+    },
+  ],
+});
 
-module.exports = mongoose.model('Recipe', recipeSchema);
+module.exports = mongoose.model("Recipe", recipeSchema);

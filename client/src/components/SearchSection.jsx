@@ -18,7 +18,9 @@ const SearchSection = ({
   onSearch
 }) => {
   const [inputValue, setInputValue] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
+  // Handle ingredient input and addition
   const handleAddIngredient = () => {
     const trimmed = inputValue.trim();
     if (trimmed) {
@@ -31,11 +33,30 @@ const SearchSection = ({
     }
   };
 
+  // Handle keydown for adding ingredient with Enter
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddIngredient();
     }
+  };
+
+  // Handle the search action
+  const handleSearch = () => {
+    // Get the list of ingredients and selected filters from state
+    const ingredientsList = ingredients.map(ingredient => ingredient.name).join(',');
+    const dietaryFiltersList = selectedFilters.join(',');
+
+    // Send the fetch request to the backend
+    fetch(`/api/recipes/search?ingredients=${ingredientsList}&dietaryFilters=${dietaryFiltersList}`)
+      .then(response => response.json())
+      .then(data => {
+        // Handle the response, e.g., display the recipes
+        console.log(data); // You would likely update your recipes state here
+      })
+      .catch(error => {
+        console.error('Error fetching recipes:', error);
+      });
   };
 
   return (
@@ -71,7 +92,7 @@ const SearchSection = ({
           <PopoverContent className="w-80">
             <div className="filter-popover">
               <h4>Dietary Preferences</h4>
-              <p>Select your dietary restrictions or preferences.</p>
+              <p>Select your dietary restrictions.</p>
               <div className="checkboxes">
                 {dietaryFilters.map((filter) => (
                   <div key={filter.id} className="checkbox-row">

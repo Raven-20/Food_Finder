@@ -177,3 +177,6 @@ app.delete("/api/users/:userId/remove-saved-recipe", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+const recipeRoutes = require("./routes/recipes");
+app.use("/api/recipes", recipeRoutes);
