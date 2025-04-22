@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import "../styles/RecipeDetail.css";
 import "../styles/card.css";
+import { getRecipeById } from "../lib/recipeApi";
 import {
   Share2,
   Clock,
@@ -30,51 +30,103 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "./ui/dialog";
 
-const RecipeDetail = ({ id, isLoggedIn, onSave, onShare, onPrint, onClose }) => {
+const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClose }) => {
   const [recipe, setRecipe] = useState(null);
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch the recipe data from the backend
   useEffect(() => {
     const fetchRecipeData = async () => {
       try {
-        const response = await axios.get(`/api/recipe/${id}`);
-        setRecipe(response.data);
-        setSaved(response.data.isSaved); // Assuming your data has `isSaved` field
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch recipe details
+        const recipeData = await getRecipeById(id);
+        
+        // If user is logged in, check if this recipe is saved
+        if (isLoggedIn && userId) {
+          const savedRecipes = await getUserSavedRecipes(userId);
+          setSaved(savedRecipes.includes(id));
+        }
+        
+        setRecipe(recipeData);
       } catch (error) {
         console.error("Error fetching recipe data:", error);
+        setError("Failed to load recipe details. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchRecipeData();
-  }, [id]);
+    if (id) {
+      fetchRecipeData();
+    }
+  }, [id, isLoggedIn, userId]);
 
-  if (!recipe) {
-    return <div>Loading...</div>;
-  }
-
-  const handleSave = () => {
-    setSaved(!saved);
-    onSave();
+  const handleSave = async () => {
+    if (!isLoggedIn) {
+      alert("Please log in to save recipes");
+      return;
+    }
+    
+    try {
+      if (saved) {
+        await unsaveRecipe(userId, id);
+      } else {
+        await saveRecipe(userId, id);
+      }
+      
+      setSaved(!saved);
+      if (onSave) onSave(id, !saved);
+    } catch (error) {
+      console.error("Error updating saved status:", error);
+      alert("Failed to update saved status. Please try again.");
+    }
   };
 
   const handleLike = () => {
     setLiked(!liked);
+    // You can implement API calls for liking recipes here
   };
 
   const handleShare = () => {
     setIsShareDialogOpen(true);
-    onShare();
+    if (onShare) onShare(id);
   };
 
   const handlePrint = () => {
-    onPrint();
+    if (onPrint) onPrint(id);
+    // You could implement actual print functionality here
+    window.print();
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4">Loading recipe details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !recipe) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-500">{error || "Recipe not found"}</p>
+          <Button className="mt-4" onClick={onClose}>Go Back</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="recipe-detail-container">
@@ -93,9 +145,7 @@ const RecipeDetail = ({ id, isLoggedIn, onSave, onShare, onPrint, onClose }) => 
             <h1 className="text-2xl font-bold">{recipe.title}</h1>
             <div className="flex flex-wrap gap-2 mt-2">
               {recipe.dietaryTags.map((tag, index) => (
-                <Badge key={index} variant="outline">
-                  {tag}
-                </Badge>
+                <Badge key={index} variant="outline">{tag}</Badge>
               ))}
             </div>
           </div>
@@ -103,31 +153,14 @@ const RecipeDetail = ({ id, isLoggedIn, onSave, onShare, onPrint, onClose }) => 
             <Button variant="outline" size="icon" onClick={handleLike}>
               <Heart className={`h-4 w-4 ${liked ? "fill-red-500 text-red-500" : ""}`} />
             </Button>
-            <Button variant="outline" size="icon" onClick={handleSave}>
-              {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            {isLoggedIn && (
+              <Button variant="outline" size="icon" onClick={handleSave}>
+                {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              </Button>
+            )}
+            <Button variant="outline" size="icon" onClick={handleShare}>
+              <Share2 className="h-4 w-4" />
             </Button>
-            <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleShare}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Share Recipe</DialogTitle>
-                  <DialogDescription>Share this recipe with friends and family.</DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4 py-4">
-                  <Button variant="outline" className="w-full">Facebook</Button>
-                  <Button variant="outline" className="w-full">Twitter</Button>
-                  <Button variant="outline" className="w-full">WhatsApp</Button>
-                  <Button variant="outline" className="w-full">Email</Button>
-                </div>
-                <DialogFooter>
-                  <Button variant="secondary" onClick={() => setIsShareDialogOpen(false)}>Close</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
             <Button variant="outline" size="icon" onClick={handlePrint}>
               <Printer className="h-4 w-4" />
             </Button>
@@ -191,6 +224,26 @@ const RecipeDetail = ({ id, isLoggedIn, onSave, onShare, onPrint, onClose }) => 
             </Card>
           </TabsContent>
         </Tabs>
+
+        <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Share Recipe</DialogTitle>
+              <DialogDescription>Share this recipe with friends and family.</DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <Button variant="outline">Facebook</Button>
+              <Button variant="outline">Twitter</Button>
+              <Button variant="outline">WhatsApp</Button>
+              <Button variant="outline">Email</Button>
+            </div>
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setIsShareDialogOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="mt-8 flex justify-end">
           <Button variant="outline" onClick={onClose}>Close</Button>
