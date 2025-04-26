@@ -22,4 +22,5 @@ const recipeSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("Recipe", recipeSchema);
+// Prevent model overwrite error
+module.exports = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);

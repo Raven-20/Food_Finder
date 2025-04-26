@@ -12,8 +12,8 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/foodfinder", { useNewUrlParser: true, useUnifiedTopology: true })
+// MongoDB Connection (removed deprecated options)
+mongoose.connect("mongodb://localhost:27017/foodfinder")
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 // Recipe Schema
 const recipeSchema = new mongoose.Schema({
@@ -37,29 +37,25 @@ const recipeSchema = new mongoose.Schema({
   dietaryTags: [String]
 });
 
-const Recipe = mongoose.model("Recipe", recipeSchema);
+const Recipe = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
 
-// Saved Recipe Schema - tracks saved recipes for each user
+// Saved Recipe Schema
 const savedRecipeSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   recipeId: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe", required: true },
 });
 
-const SavedRecipe = mongoose.model("SavedRecipe", savedRecipeSchema);
+const SavedRecipe = mongoose.models.SavedRecipe || mongoose.model("SavedRecipe", savedRecipeSchema);
 
 // SignUp Route
 app.post("/api/signup", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
     const newUser = new User({ email, password: hashedPassword });
     await newUser.save();
 
@@ -74,15 +70,12 @@ app.post("/api/signin", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Create a JWT token
     const token = jwt.sign({ userId: user._id }, "your_jwt_secret", { expiresIn: "1h" });
 
     res.status(200).json({ message: "Signed in successfully", token });
@@ -112,17 +105,6 @@ app.get("/api/recipes", async (req, res) => {
   }
 });
 
-// Get Recipe by ID
-app.get("/api/recipes/:id", async (req, res) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
-    res.status(200).json(recipe);
-  } catch (err) {
-    res.status(500).json({ message: "Error retrieving recipe" });
-  }
-});
-
 // Get Saved Recipes for a User
 app.get("/api/users/:userId/saved-recipes", async (req, res) => {
   const { userId } = req.params;
@@ -144,11 +126,9 @@ app.post("/api/users/:userId/save-recipe", async (req, res) => {
   const { recipeId } = req.body;
 
   try {
-    // Check if the recipe is already saved
     const existingSavedRecipe = await SavedRecipe.findOne({ userId, recipeId });
     if (existingSavedRecipe) return res.status(400).json({ message: "Recipe already saved" });
 
-    // Save the recipe
     const savedRecipe = new SavedRecipe({ userId, recipeId });
     await savedRecipe.save();
 
@@ -173,10 +153,11 @@ app.delete("/api/users/:userId/remove-saved-recipe", async (req, res) => {
   }
 });
 
+// Custom Routes from routes/recipes.js (if needed)
+const recipeRoutes = require("./routes/recipes");
+app.use("/api/recipes", recipeRoutes);
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-const recipeRoutes = require("./routes/recipes");
-app.use("/api/recipes", recipeRoutes);
