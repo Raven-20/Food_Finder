@@ -16,21 +16,11 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { Badge } from "./ui/badge";
 
 const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClose }) => {
   const [recipe, setRecipe] = useState(null);
@@ -39,6 +29,7 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClos
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("ingredients");
 
   useEffect(() => {
     const fetchRecipeData = async () => {
@@ -104,6 +95,10 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClos
     if (onPrint) onPrint(id);
     // You could implement actual print functionality here
     window.print();
+  };
+
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
   };
 
   if (isLoading) {
@@ -180,21 +175,32 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClos
 
         <Separator className="my-6" />
 
-        <Tabs defaultValue="ingredients">
-          <TabsList className="w-full">
-            <TabsTrigger value="ingredients" className="flex-1">Ingredients</TabsTrigger>
-            <TabsTrigger value="instructions" className="flex-1">Instructions</TabsTrigger>
-          </TabsList>
-          <TabsContent value="ingredients" className="mt-6">
+        {/* Tabs Navigation */}
+        <div className="recipe-tabs">
+          <div className="tab-list flex border-b">
+            <button 
+              className={`tab-button px-4 py-2 font-medium ${activeTab === 'ingredients' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
+              onClick={() => handleTabChange('ingredients')}
+            >       
+            </button>
+            <button 
+              className={`tab-button px-4 py-2 font-medium ${activeTab === 'instructions' ? 'border-b-2 border-primary text-primary' : 'text-gray-500'}`}
+              onClick={() => handleTabChange('instructions')}
+            >
+            </button>
+          </div>
+
+          {/* Ingredients Tab Content */}
+          <div className={`tab-content mt-6 ${activeTab === 'ingredients' ? 'block' : 'hidden'}`}>
             <Card>
               <CardHeader>
                 <CardTitle>Ingredients</CardTitle>
-                <CardDescription>For {recipe.servings} servings</CardDescription>
+                
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
                   {recipe.ingredients.map((ingredient, index) => (
-                    <li key={index} className="ingredient-item">
+                    <li key={index} className="ingredient-item flex justify-between py-2 border-b border-gray-100 last:border-0">
                       <span>{ingredient.name}</span>
                       <span className="text-muted-foreground">
                         {ingredient.amount} {ingredient.unit}
@@ -204,8 +210,10 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClos
                 </ul>
               </CardContent>
             </Card>
-          </TabsContent>
-          <TabsContent value="instructions" className="mt-6">
+          </div>
+
+          {/* Instructions Tab Content */}
+          <div className={`tab-content mt-6 ${activeTab === 'instructions' ? 'block' : 'hidden'}`}>
             <Card>
               <CardHeader>
                 <CardTitle>Instructions</CardTitle>
@@ -215,35 +223,17 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onSave, onShare, onPrint, onClos
                 <ol className="space-y-4">
                   {recipe.instructions.map((instruction) => (
                     <li key={instruction.step} className="flex gap-4">
-                      <div className="step-number">{instruction.step}</div>
+                      <div className="step-number flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-medium">
+                        {instruction.step}
+                      </div>
                       <div className="flex-1 pt-1">{instruction.description}</div>
                     </li>
                   ))}
                 </ol>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-
-        <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Share Recipe</DialogTitle>
-              <DialogDescription>Share this recipe with friends and family.</DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <Button variant="outline">Facebook</Button>
-              <Button variant="outline">Twitter</Button>
-              <Button variant="outline">WhatsApp</Button>
-              <Button variant="outline">Email</Button>
-            </div>
-            <DialogFooter>
-              <Button variant="secondary" onClick={() => setIsShareDialogOpen(false)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
 
         <div className="mt-8 flex justify-end">
           <Button variant="outline" onClick={onClose}>Close</Button>
