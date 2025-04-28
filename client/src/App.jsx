@@ -5,6 +5,10 @@ import RecipeDetail from "./components/RecipeDetail";
 import RecipeCard from "./components/RecipeCard";
 import SignUp from "./components/SignUp";   
 import SignIn from "./components/SignIn";   
+import AboutPage from "./components/AboutPage";
+import ContactPage from "./components/ContactPage";
+import PrivacyPage from "./components/PrivacyPage";
+import TermsPage from "./components/TermsPage";
 
 
 function App() {
@@ -16,6 +20,10 @@ function App() {
         <Route path="/card" element={<RecipeCard />} />  
         <Route path="/signup" element={<SignUp />} />  {/* ✅ Sign Up page route */}
         <Route path="/signin" element={<SignIn />} />  {/* ✅ Sign In page route */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
       </Routes>
     </Router>
   );
