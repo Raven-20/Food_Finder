@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
 const recipeSchema = new mongoose.Schema({
+  id: String, // added to match the sample
   title: String,
   image: String,
-  cookingTime: Number,
-  servings: Number,
   matchPercentage: Number,
+  cookingTime: Number,
+  difficulty: String, // added to match the sample
   dietaryTags: [String],
   ingredients: [
     {
@@ -22,5 +23,5 @@ const recipeSchema = new mongoose.Schema({
   ],
 });
 
-// Prevent model overwrite error
 module.exports = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
+            

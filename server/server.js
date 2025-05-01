@@ -4,23 +4,34 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const recipeRoutes = require('./routes/recipes'); // ✅ correct path
+const userRoutes = require('./routes/users');
 const app = express();
-const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json()); // Modern replacement for bodyParser.json()
 
-// MongoDB Connection (removed deprecated options)
-mongoose.connect("mongodb://localhost:27017/foodfinder")
+// Routes
+app.use('/api/recipes', recipeRoutes); // ✅ this makes /api/recipes/search work
+app.use('/api/users', userRoutes);
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/foodfinder", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("MongoDB connection error:", err));
+
+// ===== MODELS =====
 
 // User Schema
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Recipe" }]
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
@@ -39,125 +50,25 @@ const recipeSchema = new mongoose.Schema({
 
 const Recipe = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
 
-// Saved Recipe Schema
-const savedRecipeSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  recipeId: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe", required: true },
+// Make models available to route files
+app.set('models', {
+  User,
+  Recipe
 });
 
-const SavedRecipe = mongoose.models.SavedRecipe || mongoose.model("SavedRecipe", savedRecipeSchema);
-
-// SignUp Route
-app.post("/api/signup", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "User already exists" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hashedPassword });
-    await newUser.save();
-
-    res.status(201).json({ message: "User created successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+// Root API route for health check
+app.get("/api", (req, res) => {
+  res.json({ message: "Food Finder API is running" });
 });
 
-// SignIn Route
-app.post("/api/signin", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign({ userId: user._id }, "your_jwt_secret", { expiresIn: "1h" });
-
-    res.status(200).json({ message: "Signed in successfully", token });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
-// Get Recipe by ID
-app.get("/api/recipe/:id", async (req, res) => {
-  try {
-    const recipe = await Recipe.findById(req.params.id);
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
-    res.status(200).json(recipe);
-  } catch (err) {
-    res.status(500).json({ message: "Error retrieving recipe" });
-  }
-});
-
-// Get All Recipes
-app.get("/api/recipes", async (req, res) => {
-  try {
-    const recipes = await Recipe.find();
-    res.status(200).json(recipes);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching recipes" });
-  }
-});
-
-// Get Saved Recipes for a User
-app.get("/api/users/:userId/saved-recipes", async (req, res) => {
-  const { userId } = req.params;
-
-  try {
-    const savedRecipes = await SavedRecipe.find({ userId })
-      .populate("recipeId")
-      .select("recipeId");
-
-    res.status(200).json(savedRecipes.map(saved => saved.recipeId));
-  } catch (err) {
-    res.status(500).json({ message: "Error retrieving saved recipes" });
-  }
-});
-
-// Save Recipe to User's Saved Recipes
-app.post("/api/users/:userId/save-recipe", async (req, res) => {
-  const { userId } = req.params;
-  const { recipeId } = req.body;
-
-  try {
-    const existingSavedRecipe = await SavedRecipe.findOne({ userId, recipeId });
-    if (existingSavedRecipe) return res.status(400).json({ message: "Recipe already saved" });
-
-    const savedRecipe = new SavedRecipe({ userId, recipeId });
-    await savedRecipe.save();
-
-    res.status(201).json({ message: "Recipe saved successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Error saving recipe" });
-  }
-});
-
-// Remove Recipe from User's Saved Recipes
-app.delete("/api/users/:userId/remove-saved-recipe", async (req, res) => {
-  const { userId } = req.params;
-  const { recipeId } = req.body;
-
-  try {
-    const removedRecipe = await SavedRecipe.findOneAndDelete({ userId, recipeId });
-    if (!removedRecipe) return res.status(404).json({ message: "Saved recipe not found" });
-
-    res.status(200).json({ message: "Recipe removed from saved list" });
-  } catch (err) {
-    res.status(500).json({ message: "Error removing saved recipe" });
-  }
-});
-
-// Custom Routes from routes/recipes.js (if needed)
-const recipeRoutes = require("./routes/recipes");
-app.use("/api/recipes", recipeRoutes);
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Server listening on a port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
