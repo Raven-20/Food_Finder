@@ -24,24 +24,23 @@ const RecipeCard = ({
   matchPercentage = 85,
   cookingTime = 30,
   dietaryTags = ["Vegetarian", "Gluten-Free"],
-  loggedIn = false,
+  isLoggedIn = false,
   userId = "",
 }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Use an effect hook to check if the recipe is saved for the logged-in user
   useEffect(() => {
-    if (loggedIn) {
+    if (isLoggedIn && userId && id) {
       fetchSavedRecipes();
     }
-  }, [loggedIn]);
+  }, [isLoggedIn, userId, id]);
 
   const fetchSavedRecipes = async () => {
     try {
       const response = await fetch(`/api/users/${userId}/saved-recipes`);
       const savedRecipes = await response.json();
-      if (savedRecipes.includes(id)) {
+      if (Array.isArray(savedRecipes) && savedRecipes.includes(id)) {
         setIsSaved(true);
       }
     } catch (error) {
@@ -49,9 +48,8 @@ const RecipeCard = ({
     }
   };
 
-  // Function to handle saving the recipe
   const handleSave = async () => {
-    if (!loggedIn) {
+    if (!isLoggedIn) {
       alert("Please log in to save recipes");
       return;
     }
@@ -76,15 +74,8 @@ const RecipeCard = ({
     }
   };
 
-  // Function to open the modal
-  const openRecipeDetails = () => {
-    setIsModalOpen(true);
-  };
-
-  // Function to close the modal
-  const closeRecipeDetails = () => {
-    setIsModalOpen(false);
-  };
+  const openRecipeDetails = () => setIsModalOpen(true);
+  const closeRecipeDetails = () => setIsModalOpen(false);
 
   return (
     <>
@@ -95,6 +86,7 @@ const RecipeCard = ({
             <Badge className="match-badge-content">{matchPercentage}% Match</Badge>
           </div>
         </CardHeader>
+
         <CardContent className="card-content">
           <h2 className="text-lg font-semibold mb-2">{title}</h2>
           <div className="flex items-center gap-2 mb-2">
@@ -102,44 +94,57 @@ const RecipeCard = ({
             <span className="text-sm text-gray-600">{cookingTime} mins</span>
           </div>
           <div className="tags flex flex-wrap gap-1">
-            {dietaryTags.map((tag, index) => (
+            {(dietaryTags || []).map((tag, index) => (
               <Badge key={index} variant="outline" className="text-xs">{tag}</Badge>
             ))}
           </div>
         </CardContent>
+
         <CardFooter className="card-footer">
-          <Button onClick={openRecipeDetails} className="flex items-center gap-1" variant="secondary">
+          <Button
+            onClick={openRecipeDetails}
+            className="flex items-center gap-1"
+            variant="secondary"
+          >
             <Eye className="h-4 w-4" />
             Details
           </Button>
-          {loggedIn && (
-            <Button onClick={handleSave} className="flex items-center gap-1" variant={isSaved ? "default" : "outline"}>
-              <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+
+          {isLoggedIn && (
+            <Button
+              onClick={handleSave}
+              className="flex items-center gap-1"
+              variant={isSaved ? "default" : "outline"}
+            >
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-current text-red-500" : ""}`} />
               {isSaved ? "Saved" : "Save"}
             </Button>
           )}
         </CardFooter>
       </Card>
 
-      {/* Recipe Detail Modal - Centered popup */}
+      {/* Recipe Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="recipe-detail-modal">
           <div className="modal-header flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">{title}</h2>
             <DialogClose asChild>
-              <Button variant="ghost" size="icon" onClick={closeRecipeDetails} className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={closeRecipeDetails}
+                className="h-8 w-8 p-0"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </DialogClose>
           </div>
           <div className="modal-content">
-            <RecipeDetail 
+            <RecipeDetail
               id={id}
-              isLoggedIn={loggedIn}
+              isLoggedIn={isLoggedIn}
               userId={userId}
-              onSave={(recipeId, saveStatus) => {
-                setIsSaved(saveStatus);
-              }}
+              onSave={(recipeId, saveStatus) => setIsSaved(saveStatus)}
               onClose={closeRecipeDetails}
             />
           </div>
