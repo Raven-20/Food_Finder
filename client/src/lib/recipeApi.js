@@ -95,5 +95,5 @@ export default {
   getRecipeById,
   getUserSavedRecipes,
   saveRecipe,
-  unsaveRecipe
+  unsaveRecipe,
 };

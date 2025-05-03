@@ -16,7 +16,8 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
     );
   }
 
-  if (!recipes || recipes.length === 0) {
+  // Check if recipes exists and is actually an array
+  if (!recipes || !Array.isArray(recipes) || recipes.length === 0) {
     return (
       <div className="no-results">
         <h3>No matching recipes found</h3>
@@ -29,8 +30,8 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
     <div className="recipe-grid">
       {recipes.map((recipe) => (
         <Link
-        key={recipe._id || recipe.id} // Use _id if available, otherwise fall back to id
-        to={`/recipe/${recipe._id || recipe.id}`}
+          key={recipe._id || recipe.id} // Use _id if available, otherwise fall back to id
+          to={`/recipe/${recipe._id || recipe.id}`}
           className="recipe-card"
         >
           <img
