@@ -1,13 +1,25 @@
+// server/models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  password: String,
-  savedRecipes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Recipe',
-  }],
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  // Add any other fields you need
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

@@ -15,11 +15,13 @@ const SignIn = () => {
         email,
         password,
       });
+
       console.log("Signed in with token:", response.data.token);
 
-      // Save email and token to localStorage
+      // ✅ Save email, token, and userId to localStorage
       localStorage.setItem("authToken", response.data.token);
-      localStorage.setItem("userEmail", email); // Store the email as well
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userId", response.data.userId);
 
       // Show success modal
       setShowModal(true);
@@ -32,7 +34,7 @@ const SignIn = () => {
   // Close modal and optionally redirect after successful login
   const closeModal = () => {
     setShowModal(false);
-    window.location.href = "/"; // You can change this to the appropriate route
+    window.location.href = "/"; // Change this if needed
   };
 
   return (
