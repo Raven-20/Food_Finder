@@ -22,10 +22,17 @@ const SignUp = () => {
       });
       console.log(response.data);
 
-      // Show modal after successful sign up
+      // ✅ Store token, email, and userId if returned
+      if (response.data.token && response.data.userId) {
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userId", response.data.userId);
+      }
+
+      // Show modal after successful sign-up
       setShowModal(true);
 
-      // Optionally, reset the form after successful sign up
+      // Optionally, reset the form
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -35,11 +42,9 @@ const SignUp = () => {
     }
   };
 
-  // Close modal after user clicks OK
   const closeModal = () => {
     setShowModal(false);
-    // Redirect to sign-in page after successful sign-up, if needed
-    window.location.href = "/signin";  // Optional: Automatically redirect to sign-in
+    window.location.href = "/signin"; // Redirect to sign-in page
   };
 
   return (

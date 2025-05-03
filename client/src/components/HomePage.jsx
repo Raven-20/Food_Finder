@@ -191,21 +191,19 @@ const HomePage = () => {
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
-    if (email) setUserEmail(email);
-    
-    // Add authentication check for loggedIn status
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
     const userId = localStorage.getItem("userId");
-    
-    // Create state variables if they don't exist yet
+  
+    if (email) setUserEmail(email);
     if (typeof setLoggedIn === "function") {
       setLoggedIn(!!token);
     }
-    
-    if (typeof setUserId === "function") {
+  
+    if (userId && typeof setUserId === "function") {
       setUserId(userId);
     }
   }, []);
+  
 
   const handleAddIngredient = () => {
     const trimmed = inputValue.trim().toLowerCase();
