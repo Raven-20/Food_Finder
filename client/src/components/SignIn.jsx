@@ -63,8 +63,8 @@ const SignIn = () => {
 
       {/* Modal for successful login */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="auth-modal-overlay">
+          <div className="auth-modal">
             <h3>Login Successful!</h3>
             <button onClick={closeModal}>OK</button>
           </div>

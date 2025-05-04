@@ -1,93 +1,151 @@
-.recipe-detail-container {
-  background-color: var(--background);
-  max-width: 64rem; /* max-w-4xl */
-  margin: 2rem auto;
-  border-radius: 1rem; /* rounded-2xl */
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* subtle elevation */
-  transition: box-shadow 0.3s ease;
-}
-
-.image-wrapper {
+/* RecipeDetail.css */
+.recipe-detail {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   position: relative;
 }
 
-.recipe-image {
-  width: 100%;
-  height: 18rem; /* slightly taller for better visual balance */
-  object-fit: cover;
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-}
-
-.match-percentage {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+.recipe-detail-header {
   display: flex;
-  gap: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: #000;
-}
-
-.ingredient-item {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #e5e7eb; /* gray-200 */
-  font-size: 0.95rem;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  position: relative;
 }
 
-.ingredient-item:last-child {
-  border-bottom: none;
+.recipe-detail-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  padding: 0 2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.step-number {
-  flex-shrink: 0;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background-color: var(--primary);
+.close-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary-foreground);
-  font-weight: 600;
+  padding: 0.5rem;
+  color: rgba(0, 0, 0, 0.6);
+  transition: color 0.2s;
 }
 
-.recipe-tabs {
-  margin-top: 2rem;
+.close-button:hover {
+  color: rgba(0, 0, 0, 0.9);
 }
 
-.tab-list {
+.recipe-detail-content {
   display: flex;
-  border-bottom: 2px solid #e5e7eb; /* gray-200 */
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.recipe-detail-image-container {
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.recipe-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-description {
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.tab-buttons {
+  position: relative;
 }
 
 .tab-button {
-  background: none;
+  background: transparent;
   border: none;
-  outline: none;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
   cursor: pointer;
-  transition: color 0.3s, border-color 0.3s;
+  transition: all 0.2s;
 }
 
-.tab-button:hover {
-  color: var(--primary);
+.tab-button:not(.active) {
+  color: rgba(0, 0, 0, 0.5);
 }
 
-.tab-button.active {
-  border-bottom: 2px solid var(--primary);
-  color: var(--primary);
+.tab-button:hover:not(.active) {
+  color: rgba(0, 0, 0, 0.8);
 }
 
-.tab-content {
-  margin-top: 1.5rem;
+.ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ingredient-amount {
+  color: rgba(0, 0, 0, 0.5);
+  min-width: 80px;
+}
+
+.instructions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: instruction-counter;
+}
+
+.instruction-text {
+  flex: 1;
+}
+
+.nutrition-grid {
+  margin-top: 1rem;
+}
+
+/* Loading and error states */
+.recipe-detail-loading,
+.recipe-detail-error,
+.recipe-detail-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+}
+
+/* Media queries for responsive layout */
+@media (min-width: 768px) {
+  .recipe-detail-content {
+    flex-direction: row;
+  }
+  
+  .recipe-detail-image-container {
+    flex: 0 0 40%;
+    max-height: none;
+    height: auto;
+  }
+  
+  .recipe-detail-meta {
+    flex: 1;
+    padding-left: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .nutrition-grid {
+    grid-template-columns: 1fr;
+  }
 }
