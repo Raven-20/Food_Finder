@@ -54,12 +54,51 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET a single recipe by ID
+// GET a single recipe by ID - ENHANCED with complete recipe details
 router.get('/:id', async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
+    
     if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
-    res.status(200).json(recipe);
+    
+    // Ensure ingredients are in the expected format for the frontend
+    // This will depend on your MongoDB schema, but we need to make sure it matches
+    // what the frontend expects (array of objects with name, amount, unit)
+    const formattedRecipe = {
+      ...recipe.toObject(),
+      ingredients: recipe.ingredients?.map(ing => {
+        // If ingredients are already in the correct format, return as is
+        if (ing && typeof ing === 'object' && ing.name) {
+          return ing;
+        }
+        // Otherwise, try to format them correctly
+        // This assumes ingredient might be a string like "1 cup flour"
+        // You may need to adjust this based on your actual data structure
+        const parts = typeof ing === 'string' ? ing.split(' ') : [];
+        return {
+          name: parts.length > 2 ? parts.slice(2).join(' ') : ing,
+          amount: parts[0] || '',
+          unit: parts[1] || ''
+        };
+      }) || [],
+      
+      // Ensure instructions are in the expected format for the frontend
+      // (array of objects with step number and description)
+      instructions: recipe.instructions?.map((inst, index) => {
+        // If instructions are already in the correct format, return as is
+        if (inst && typeof inst === 'object' && inst.step) {
+          return inst;
+        }
+        // Otherwise, format them correctly
+        return {
+          step: index + 1,
+          description: inst || ''
+        };
+      }) || []
+    };
+    
+    console.log('Sending formatted recipe:', JSON.stringify(formattedRecipe, null, 2));
+    res.status(200).json(formattedRecipe);
   } catch (err) {
     console.error(`Error retrieving recipe ${req.params.id}:`, err);
     if (err.kind === 'ObjectId') {
