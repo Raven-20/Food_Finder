@@ -10,9 +10,9 @@ import {
   PlusCircle,
   MinusCircle,
   Printer,
-  Check,
-  Utensils,
   AlarmClock,
+  Utensils,
+  Check,
   Thermometer
 } from "lucide-react";
 import { Badge } from "../components/ui/badge";
@@ -36,18 +36,15 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
   const [error, setError] = useState(null);
   const [servings, setServings] = useState(4);
   const [isFavorite, setIsFavorite] = useState(false);
-  
 
   useEffect(() => {
     const fetchRecipeData = async () => {
       try {
         setIsLoading(true);
-        // Get basic recipe data from existing function
         const data = await getRecipe(id);
         setRecipe(data);
         setServings(data.defaultServings || 4);
 
-        // Try to get detailed recipe information if the endpoint exists
         try {
           const details = await getRecipeDetails(id);
           if (details) {
@@ -55,7 +52,6 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
           }
         } catch (detailsErr) {
           console.log("Note: Detailed recipe info not available, using basic data only");
-          // We'll continue without the detailed data
         }
 
         if (isLoggedIn && userId) {
@@ -93,15 +89,10 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
   };
 
   const adjustServings = (increase) => {
-    setServings(prevServings => {
-      if (!increase && prevServings <= 1) return 1;
-      return increase ? prevServings + 1 : prevServings - 1;
-    });
+    setServings(prev => Math.max(1, prev + (increase ? 1 : -1)));
   };
 
-  const printRecipe = () => {
-    window.print();
-  };
+  const printRecipe = () => window.print();
 
   const shareRecipe = async () => {
     if (navigator.share) {
@@ -140,16 +131,14 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
 
   if (!recipe) return null;
 
-  // Combine recipe and recipeDetails data (if details exist)
   const combinedRecipe = {
     ...recipe,
     ...(recipeDetails || {}),
-    // Ensure we're using the core properties correctly
-    prepTime: (recipeDetails?.prepTime || recipe.prepTime || 0),
-    cookTime: (recipeDetails?.cookTime || recipe.cookingTime || 0),
-    difficulty: (recipeDetails?.difficulty || "Medium"),
-    notes: (recipeDetails?.notes || ""),
-    nutritionInfo: (recipeDetails?.nutritionInfo || {}),
+    prepTime: recipeDetails?.prepTime || recipe.prepTime || 0,
+    cookTime: recipeDetails?.cookTime || recipe.cookingTime || 0,
+    difficulty: recipeDetails?.difficulty || "Medium",
+    notes: recipeDetails?.notes || "",
+    nutritionInfo: recipeDetails?.nutritionInfo || {},
   };
 
   const scaledIngredients = combinedRecipe.ingredients?.map((ingredient) => {
@@ -165,25 +154,14 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
 
   return (
     <div className="recipe-detail">
-      {/* Header */}
       <div className="recipe-detail-header mb-4 flex justify-between items-center">
         <Button variant="ghost" onClick={onClose}>
-          <ChevronLeft className="h-5 w-5 mr-1" />
-          Back
+          <ChevronLeft className="h-5 w-5 mr-1" /> Back
         </Button>
-
         <div className="recipe-actions flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleFavorite}
-            className={isFavorite ? "text-red-500" : ""}
-          >
-            <Heart
-              className="h-5 w-5"
-              fill={isFavorite ? "currentColor" : "none"}
-            />
-          </Button>         
+          <Button variant="outline" size="icon" onClick={toggleFavorite} className={isFavorite ? "text-red-500" : ""}>
+            <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
+          </Button>
           <Button variant="outline" size="icon" onClick={shareRecipe}>
             <Share2 className="h-5 w-5" />
           </Button>
@@ -193,9 +171,7 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
         </div>
       </div>
 
-      {/* Grid Layout */}
       <div className="recipe-grid">
-        {/* Left: Image & Info */}
         <div className="recipe-image-container">
           <img
             src={combinedRecipe.image || "/placeholder-recipe.jpg"}
@@ -212,7 +188,6 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
 
           <div className="recipe-meta mt-4">
             <h1 className="recipe-title text-2xl font-bold mb-2">{combinedRecipe.title}</h1>
-
             <div className="flex flex-wrap items-center gap-4 mb-3">
               {combinedRecipe.prepTime > 0 && (
                 <div className="flex items-center">
@@ -220,12 +195,10 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
                   <span className="text-sm">{combinedRecipe.prepTime} mins prep</span>
                 </div>
               )}
-              
               <div className="flex items-center">
                 <Clock className="h-4 w-4 text-gray-500 mr-1" />
-                <span className="text-sm">{combinedRecipe.cookTime || combinedRecipe.cookingTime || 0} mins cook</span>
+                <span className="text-sm">{combinedRecipe.cookTime} mins cook</span>
               </div>
-
               {combinedRecipe.difficulty && (
                 <div className="flex items-center">
                   <Utensils className="h-4 w-4 text-gray-500 mr-1" />
@@ -233,72 +206,47 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
                 </div>
               )}
             </div>
-
             <div className="flex items-center mb-3">
               <Users className="h-4 w-4 text-gray-500 mr-1" />
               <div className="servings-control flex items-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0"
-                  onClick={() => adjustServings(false)}
-                  disabled={servings <= 1}
-                >
+                <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={() => adjustServings(false)} disabled={servings <= 1}>
                   <MinusCircle className="h-4 w-4" />
                 </Button>
                 <span className="text-sm mx-2">{servings} servings</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0"
-                  onClick={() => adjustServings(true)}
-                >
+                <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={() => adjustServings(true)}>
                   <PlusCircle className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-
             {combinedRecipe.dietaryTags?.length > 0 && (
               <div className="tags flex flex-wrap gap-1 mb-4">
                 {combinedRecipe.dietaryTags.map((tag, index) => (
-                  <Badge key={index} variant="outline">
-                    {tag}
-                  </Badge>
+                  <Badge key={index} variant="outline">{tag}</Badge>
                 ))}
               </div>
             )}
-
             {combinedRecipe.description && (
-              <p className="recipe-description text-gray-700 mb-4">
-                {combinedRecipe.description}
-              </p>
-            )}                           
+              <p className="recipe-description text-gray-700 mb-4">{combinedRecipe.description}</p>
+            )}
           </div>
         </div>
 
-        {/* Right: Tabs */}
         <div className="recipe-content">
           <Tabs defaultValue="ingredients" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-              <TabsTrigger value="instructions">Instructions</TabsTrigger>            
+              <TabsTrigger value="instructions">Instructions</TabsTrigger>
             </TabsList>
 
             <TabsContent value="ingredients" className="mt-4">
               <div className="h-[400px] overflow-y-auto pr-4">
                 <ul className="ingredients-list space-y-2">
                   {scaledIngredients?.map((ingredient, idx) => (
-                    <li
-                      key={idx}
-                      className="ingredient-item flex items-start py-1"
-                    >
+                    <li key={idx} className="ingredient-item flex items-start py-1">
                       <div className="ingredient-amount min-w-[80px] text-sm">
                         {typeof ingredient.scaledAmount === "number"
-                          ? ingredient.scaledAmount
-                              .toFixed(1)
-                              .replace(/\.0$/, "")
-                          : ingredient.amount}{" "}
-                        {ingredient.unit}
+                          ? ingredient.scaledAmount.toFixed(1).replace(/\.0$/, "")
+                          : ingredient.amount} {ingredient.unit}
                       </div>
                       <div className="ingredient-name">{ingredient.name}</div>
                     </li>
@@ -310,17 +258,20 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
             <TabsContent value="instructions" className="mt-4">
               <div className="h-[400px] overflow-y-auto pr-4">
                 <ol className="instructions-list space-y-4">
-                  {combinedRecipe.instructions?.map((step, idx) => (
+                  {combinedRecipe.instructions?.map((stepObj, idx) => (
                     <li key={idx} className="instruction-step">
                       <div className="step-number bg-gray-100 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium float-left mr-3 mt-1">
                         {idx + 1}
                       </div>
-                      <div className="step-text">{step}</div>
+                      <div className="step-text">
+                        {typeof stepObj === "string" ? stepObj : stepObj.description}
+                      </div>
                     </li>
                   ))}
                 </ol>
               </div>
-            </TabsContent>            
+            </TabsContent>
+
           </Tabs>
         </div>
       </div>
