@@ -16,10 +16,10 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />  {/* Set HomePage as the landing page */}
-        <Route path="/recipe/:id" element={<RecipeDetail />} />
+        <Route path="/recipes/:id" element={<RecipeDetail />} />
         <Route path="/card" element={<RecipeCard />} />  
-        <Route path="/signup" element={<SignUp />} />  {/* ✅ Sign Up page route */}
-        <Route path="/signin" element={<SignIn />} />  {/* ✅ Sign In page route */}
+        <Route path="/signup" element={<SignUp />} /> 
+        <Route path="/signin" element={<SignIn />} />  
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />

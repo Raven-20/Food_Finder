@@ -2,14 +2,30 @@ import React, { useState } from "react";
 
 export const Tabs = ({ children, defaultValue }) => {
   const [active, setActive] = useState(defaultValue);
-
-  return React.Children.map(children, (child) =>
-    React.cloneElement(child, { active, setActive })
+  
+  // Create a context for passing active state and setActive function
+  return (
+    <div>
+      {React.Children.map(children, (child) => {
+        // Only clone and pass props to direct children
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { active, setActive });
+        }
+        return child;
+      })}
+    </div>
   );
 };
 
-export const TabsList = ({ children, className = "" }) => (
-  <div className={`flex gap-2 ${className}`}>{children}</div>
+export const TabsList = ({ children, className = "", active, setActive }) => (
+  <div className={`flex gap-2 ${className}`}>
+    {React.Children.map(children, (child) => {
+      if (React.isValidElement(child)) {
+        return React.cloneElement(child, { active, setActive });
+      }
+      return child;
+    })}
+  </div>
 );
 
 export const TabsTrigger = ({ value, children, active, setActive, className = "" }) => (

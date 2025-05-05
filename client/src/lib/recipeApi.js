@@ -3,14 +3,19 @@
 // Define the base URL for your API
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? '/api' // In production, use relative path
-  : 'http://localhost:5000/api'; // Using your existing port (5000)
+  : 'http://localhost:5000/api'; // Use your local backend server
 
 /**
  * Helper function to handle API responses consistently
  */
 async function handleApiResponse(response, errorMessage) {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: errorMessage }));
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { message: errorMessage };
+    }
     throw new Error(errorData.message || errorMessage);
   }
   return await response.json();
@@ -43,57 +48,23 @@ export async function getRecipeById(id) {
 }
 
 /**
- * Get user's saved recipes
+ * Fetches detailed recipe information from the API
+ * @param {string} recipeId - ID of the recipe to fetch
+ * @returns {Promise<Object>} - Promise resolving to recipe details
  */
-export async function getUserSavedRecipes(userId) {
+export const getRecipeDetails = async (recipeId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved`);
-    return await handleApiResponse(response, "Failed to load saved recipes");
+    const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/details`);
+    return await handleApiResponse(response, "Failed to fetch recipe details");
   } catch (error) {
-    console.error(`Error fetching saved recipes for user ${userId}:`, error);
+    console.error(`Error fetching recipe details with ID ${recipeId}:`, error);
     throw error;
   }
-}
-
-/**
- * Save a recipe for a user
- */
-export async function saveRecipe(userId, recipeId) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved`, {
-      method: "POST",
-      body: JSON.stringify({ recipeId }),
-      headers: { "Content-Type": "application/json" },
-    });
-    return await handleApiResponse(response, "Failed to save recipe");
-  } catch (error) {
-    console.error(`Error saving recipe ${recipeId} for user ${userId}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Remove a saved recipe for a user
- */
-export async function unsaveRecipe(userId, recipeId) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/saved`, {
-      method: "DELETE",
-      body: JSON.stringify({ recipeId }),
-      headers: { "Content-Type": "application/json" },
-    });
-    return await handleApiResponse(response, "Failed to unsave recipe");
-  } catch (error) {
-    console.error(`Error removing saved recipe ${recipeId} for user ${userId}:`, error);
-    throw error;
-  }
-}
+};
 
 // Export all functions as a default object as well for convenience
 export default {
   fetchAllRecipes,
   getRecipeById,
-  getUserSavedRecipes,
-  saveRecipe,
-  unsaveRecipe,
+  getRecipeDetails,
 };

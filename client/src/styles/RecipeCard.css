@@ -28,6 +28,9 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  display: block;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
 }
 
 .recipe-image:hover {
@@ -36,28 +39,37 @@
 
 /* Match badge styles */
 .match-badge {
-  position: absolute;
+  position: relative;
   top: 0.5rem;
   right: 0.5rem;
   z-index: 10;
 }
 
 .match-badge-content {
-  background-color: #22c55e; /* Tailwind's green-500 */
+  background-color: #22c55e; /* Tailwind green-500 */
   color: white;
   font-weight: 500;
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   font-size: 0.75rem;
+  transition: background-color 0.2s ease;
 }
 
-.match-badge-content:hover {
-  background-color: #16a34a; /* Tailwind's green-600 */
+.match-badge-content:hover,
+.match-badge-content:focus {
+  background-color: #16a34a; /* Tailwind green-600 */
 }
 
 /* Content inside the card */
 .card-content {
   padding: 1rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
 }
 
 /* Footer section */
