@@ -15,27 +15,31 @@ router.use((req, res, next) => {
 router.get('/', async (req, res) => {
   try {
     const { ingredients } = req.query;
-
     let recipes;
-
     if (ingredients) {
-      // Split the ingredients string by commas, trim whitespace, and convert to lowercase
       const ingredientsArray = ingredients
         .split(',')
         .map((ing) => ing.trim().toLowerCase());
-
-      // Find recipes where the ingredients field contains all the specified ingredients
       recipes = await Recipe.find({
         ingredients: {
-          $all: ingredientsArray, // Match all specified ingredients
+          $all: ingredientsArray,
         },
       });
     } else {
-      recipes = await Recipe.find(); // Return all recipes if no ingredients query is provided
+      recipes = await Recipe.find();
     }
 
-    // Return the filtered recipes
-    res.status(200).json(recipes);
+    // Format the recipes
+    const formattedRecipes = recipes.map((recipe) => ({
+      id: recipe._id.toString(),
+      title: recipe.title || 'Untitled Recipe',
+      image: recipe.image || '',
+      matchPercentage: recipe.matchPercentage || 90,
+      cookingTime: recipe.cookingTime || 30,
+      servings: recipe.servings || 4,
+    }));
+
+    res.status(200).json(formattedRecipes);
   } catch (err) {
     console.error('Error fetching recipes:', err);
     res.status(500).json({ message: 'Error fetching recipes' });
@@ -54,57 +58,89 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET a single recipe by ID - ENHANCED with complete recipe details
+// GET a single recipe by ID
 router.get('/:id', async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
-    
     if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
-    
-    // Ensure ingredients are in the expected format for the frontend
-    // This will depend on your MongoDB schema, but we need to make sure it matches
-    // what the frontend expects (array of objects with name, amount, unit)
-    const formattedRecipe = {
-      ...recipe.toObject(),
-      ingredients: recipe.ingredients?.map(ing => {
-        // If ingredients are already in the correct format, return as is
-        if (ing && typeof ing === 'object' && ing.name) {
-          return ing;
-        }
-        // Otherwise, try to format them correctly
-        // This assumes ingredient might be a string like "1 cup flour"
-        // You may need to adjust this based on your actual data structure
-        const parts = typeof ing === 'string' ? ing.split(' ') : [];
-        return {
-          name: parts.length > 2 ? parts.slice(2).join(' ') : ing,
-          amount: parts[0] || '',
-          unit: parts[1] || ''
-        };
-      }) || [],
-      
-      // Ensure instructions are in the expected format for the frontend
-      // (array of objects with step number and description)
-      instructions: recipe.instructions?.map((inst, index) => {
-        // If instructions are already in the correct format, return as is
-        if (inst && typeof inst === 'object' && inst.step) {
-          return inst;
-        }
-        // Otherwise, format them correctly
-        return {
-          step: index + 1,
-          description: inst || ''
-        };
-      }) || []
-    };
-    
-    console.log('Sending formatted recipe:', JSON.stringify(formattedRecipe, null, 2));
-    res.status(200).json(formattedRecipe);
+
+    res.status(200).json({
+      id: recipe._id.toString(),
+      title: recipe.title || 'Untitled Recipe',
+      image: recipe.image || '',
+      matchPercentage: recipe.matchPercentage || 95,
+      cookingTime: recipe.cookingTime || 30,
+      servings: recipe.servings || 4,
+    });
   } catch (err) {
     console.error(`Error retrieving recipe ${req.params.id}:`, err);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ message: 'Invalid recipe ID format' });
     }
     res.status(500).json({ message: 'Error retrieving recipe' });
+  }
+});
+
+// ✅ NEW: GET detailed recipe info (for /details route)
+router.get('/:id/details', async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return res.status(404).json({ message: 'Recipe not found' });
+
+    const formattedRecipe = {
+      ...recipe.toObject(),
+      id: recipe._id.toString(),
+      title: recipe.title || 'Untitled Recipe',
+      image: recipe.image || '',
+      matchPercentage: recipe.matchPercentage || 95,
+      cookingTime: recipe.cookingTime || 30,
+      servings: recipe.servings || 4,
+      dietaryTags: Array.isArray(recipe.dietaryTags) ? recipe.dietaryTags : [],
+      description: recipe.description || 'A delicious recipe that\'s sure to please.',
+      nutritionInfo: recipe.nutritionInfo || null,
+
+      ingredients: (recipe.ingredients || []).map((ing, index) => {
+        if (typeof ing === 'string') {
+          const parts = ing.split(/\s+/);
+          const hasAmount = !isNaN(parseFloat(parts[0]));
+          return {
+            id: index,
+            name: hasAmount ? parts.slice(2).join(' ') : ing,
+            amount: hasAmount ? parts[0] : '',
+            unit: hasAmount && parts.length > 1 ? parts[1] : ''
+          };
+        } else if (ing && typeof ing === 'object') {
+          return {
+            id: index,
+            name: ing.name || ing.ingredient || 'Ingredient',
+            amount: ing.amount || ing.quantity || '',
+            unit: ing.unit || ing.measure || ''
+          };
+        }
+        return { id: index, name: 'Ingredient', amount: '', unit: '' };
+      }),
+
+      instructions: (recipe.instructions || []).map((inst, index) => {
+        if (typeof inst === 'string') {
+          return { step: index + 1, description: inst };
+        } else if (inst && typeof inst === 'object') {
+          return {
+            step: inst.step || index + 1,
+            description: inst.description || inst.text || 'Step description'
+          };
+        }
+        return { step: index + 1, description: 'Step description' };
+      })
+    };
+
+    console.log('Sending detailed recipe:', JSON.stringify(formattedRecipe, null, 2));
+    res.status(200).json(formattedRecipe);
+  } catch (err) {
+    console.error(`Error retrieving detailed recipe ${req.params.id}:`, err);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Invalid recipe ID format' });
+    }
+    res.status(500).json({ message: 'Error retrieving detailed recipe' });
   }
 });
 

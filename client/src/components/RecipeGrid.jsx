@@ -23,7 +23,6 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
     );
   }
 
-  // Check if recipes exists and is actually an array
   if (!recipes || !Array.isArray(recipes) || recipes.length === 0) {
     return (
       <div className="no-results text-center py-12">
@@ -35,39 +34,28 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
 
   return (
     <div className="recipe-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {recipes.map((recipe) => {
-        // Ensure each recipe has a unique ID
-        const recipeId = recipe._id || recipe.id || `recipe-${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Ensure recipe has a title
-        const recipeTitle = recipe.name || recipe.title || `Recipe ${recipeId}`;
-        
-        // Normalize recipe data to ensure consistency
+      {recipes.map((recipe, index) => {
+        const recipeId = recipe._id || recipe.id || `recipe-${index}`;
+        const recipeTitle = recipe.name || recipe.title || `Recipe ${index + 1}`;
+        const recipeImage = recipe.image || recipe.imageUrl || "/default-recipe.jpg";
+
         const normalizedRecipe = {
           id: recipeId,
           title: recipeTitle,
-          image: recipe.image || recipe.imageUrl || null,
-          matchPercentage: recipe.matchPercentage || recipe.match || null,
-          cookingTime: recipe.cookingTime || recipe.prepTime || recipe.time || 30,
-          dietaryTags: recipe.dietaryTags || recipe.tags || [],
-          ingredients: recipe.ingredients || [],
-          instructions: recipe.instructions || []
+          image: recipeImage,
+          matchPercentage: recipe.matchPercentage ?? recipe.match ?? null,
+          cookingTime: recipe.cookingTime ?? recipe.prepTime ?? recipe.time ?? 30,
+          dietaryTags: recipe.dietaryTags ?? recipe.tags ?? [],
+          ingredients: recipe.ingredients ?? [],
+          instructions: recipe.instructions ?? []
         };
-        
-        // Debug log to check what data is being passed
+
         console.log("Processing recipe:", normalizedRecipe);
-        
+
         return (
           <RecipeCard
-            key={normalizedRecipe.id}
-            id={normalizedRecipe.id}
-            title={normalizedRecipe.title}
-            image={normalizedRecipe.image}
-            matchPercentage={normalizedRecipe.matchPercentage}
-            cookingTime={normalizedRecipe.cookingTime}
-            dietaryTags={normalizedRecipe.dietaryTags}
-            ingredients={normalizedRecipe.ingredients}
-            instructions={normalizedRecipe.instructions}
+            key={recipeId}
+            recipe={normalizedRecipe}
             isLoggedIn={loggedIn}
             userId={userId}
           />
