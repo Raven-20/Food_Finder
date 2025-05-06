@@ -1,4 +1,3 @@
-// server/routes/favorites.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -88,6 +87,45 @@ router.get('/favorites/:userId', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch favorites',
+      error: error.message,
+    });
+  }
+});
+
+// ✅ DELETE /api/favorites/:userId/:recipeId - Explicitly remove a recipe from favorites
+router.delete('/favorites/:userId/:recipeId', async (req, res) => {
+  try {
+    const { userId, recipeId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    const index = user.favorites.indexOf(recipeId);
+    if (index === -1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Recipe is not in favorites',
+      });
+    }
+
+    user.favorites.splice(index, 1);
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Recipe removed from favorites',
+    });
+
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to remove favorite',
       error: error.message,
     });
   }

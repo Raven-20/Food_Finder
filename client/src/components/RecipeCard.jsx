@@ -8,7 +8,7 @@ import {
 } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Clock, Eye } from "lucide-react";
+import { Clock, Eye, Heart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,8 @@ const RecipeCard = ({
   isLoggedIn = false,
   userId = "",
   recipe = {},
+  isFavorite = false,
+  onRemoveFavorite = null, // ✅ Optional removal handler
 }) => {
   // Fallback and merging values
   const recipeId = recipe.id || id;
@@ -39,9 +41,15 @@ const RecipeCard = ({
   const openRecipeDetails = () => setIsModalOpen(true);
   const closeRecipeDetails = () => setIsModalOpen(false);
 
+  const handleFavoriteClick = () => {
+    if (onRemoveFavorite && typeof onRemoveFavorite === "function") {
+      onRemoveFavorite(recipeId); // ✅ Trigger removal
+    }
+  };
+
   return (
     <>
-      <Card className="recipe-card">
+      <Card className="recipe-card relative">
         <CardHeader className="image-container p-0">
           <div className="recipe-name-banner">
             <h2 className="recipe-title text-lg font-semibold">{recipeTitle}</h2>
@@ -58,10 +66,17 @@ const RecipeCard = ({
               }
             }}
           />
-          {typeof recipeMatch === "number" && recipeMatch > 0 && (
-            <div className="match-badge">
-              
-            </div>
+          
+          {isFavorite && onRemoveFavorite && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleFavoriteClick}
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white/90 rounded-full"
+              title="Remove from Favorites"
+            >
+              <Heart className="h-5 w-5 text-red-500 fill-red-500" />
+            </Button>
           )}
         </CardHeader>
 
@@ -100,7 +115,7 @@ const RecipeCard = ({
         <DialogContent className="recipe-detail-modal max-w-4xl max-h-[90vh] overflow-y-auto">
           <RecipeDetail
             id={recipeId}
-            recipe={recipe} 
+            recipe={recipe}
             isLoggedIn={isLoggedIn}
             userId={userId}
             onClose={closeRecipeDetails}
