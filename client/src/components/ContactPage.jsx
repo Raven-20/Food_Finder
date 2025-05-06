@@ -58,7 +58,7 @@ const ContactPage = () => {
               <Mail size={24} />
               <div>
                 <h3>Email</h3>
-                <p>support@foodfinder.example</p>
+                <p>sybilcelestra@gmail.com</p>
               </div>
             </div>
             
@@ -66,7 +66,7 @@ const ContactPage = () => {
               <Phone size={24} />
               <div>
                 <h3>Phone</h3>
-                <p>(555) 123-4567</p>
+                <p>09686500761</p>
               </div>
             </div>
             
@@ -74,7 +74,7 @@ const ContactPage = () => {
               <MapPin size={24} />
               <div>
                 <h3>Address</h3>
-                <p>123 Culinary Ave, Suite 101<br />Foodie City, FC 98765</p>
+                <p>Unit 3 Oprra<br />Foodie City</p>
               </div>
             </div>
           </div>
