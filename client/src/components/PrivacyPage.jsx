@@ -39,8 +39,7 @@ const PrivacyPage = () => {
           <p>
             When you register for an account, we collect:
           </p>
-          <ul>
-            <li>Your name</li>
+          <ul>           
             <li>Email address</li>
             <li>Password (stored in encrypted form)</li>
             <li>Dietary preferences (if provided)</li>
@@ -126,9 +125,9 @@ const PrivacyPage = () => {
             If you have any questions about this Privacy Policy, please contact us at:
           </p>
           <p>
-            Email: privacy@foodfinder.example<br />
-            Phone: (555) 123-4567<br />
-            Address: 123 Culinary Ave, Suite 101, Foodie City, FC 98765
+            Email: sybilcelestra@gmail.com<br />
+            Phone: 09686500761<br />
+            Address: Unit 3 Oprra, Foodie City
           </p>
         </section>
       </main>

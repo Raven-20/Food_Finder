@@ -35,7 +35,7 @@ const AboutPage = () => {
             extra trip to the grocery store.
           </p>
           <p>
-            You can also filter recipes based on dietary preferences like vegetarian,
+            You can also see recipes that have  dietary preferences like vegetarian,
             vegan, gluten-free, and more, ensuring that everyone can find suitable
             meal options regardless of dietary restrictions.
           </p>
@@ -44,12 +44,12 @@ const AboutPage = () => {
         <section className="about-section">
           <h2>Our Story</h2>
           <p>
-            Food Finder began in 2023 when our founder, struggling with the common
+            Food Finder began in 2025 when I was struggling with the common
             "what's for dinner?" dilemma, realized how much food was wasted because
             people didn't know what to cook with ingredients they already had.
           </p>
           <p>
-            After months of development and recipe curation, Food Finder launched with
+            After thinking of development and recipe curation, Food Finder launched with
             the mission to help home cooks everywhere make the most of what they have,
             reduce waste, and enjoy delicious, home-cooked meals.
           </p>
@@ -59,19 +59,14 @@ const AboutPage = () => {
           <h2>Our Team</h2>
           <div className="team-members">
             <div className="team-member">
-              <div className="team-member-photo" style={{ backgroundColor: "#f0f0f0" }}>JP</div>
-              <h3>Jamie Peterson</h3>
+              <div className="team-member-photo" style={{ backgroundColor: "#f0f0f0" }}>SMC</div>
+              <h3>Sybil Mae Celestra</h3>
               <p>Founder & Recipe Curator</p>
             </div>
             <div className="team-member">
-              <div className="team-member-photo" style={{ backgroundColor: "#f0f0f0" }}>SL</div>
-              <h3>Sam Lee</h3>
+              <div className="team-member-photo" style={{ backgroundColor: "#f0f0f0" }}>SC</div>
+              <h3>Sybil Celestra</h3>
               <p>Head of Technology</p>
-            </div>
-            <div className="team-member">
-              <div className="team-member-photo" style={{ backgroundColor: "#f0f0f0" }}>MR</div>
-              <h3>Maya Rodriguez</h3>
-              <p>Lead Nutritionist</p>
             </div>
           </div>
         </section>
