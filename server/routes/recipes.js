@@ -20,10 +20,13 @@ router.get('/', async (req, res) => {
       const ingredientsArray = ingredients
         .split(',')
         .map((ing) => ing.trim().toLowerCase());
+    
       recipes = await Recipe.find({
-        ingredients: {
-          $all: ingredientsArray,
-        },
+        $and: ingredientsArray.map((ingredient) => ({
+          "ingredients.name": {
+            $regex: new RegExp(ingredient, "i") // partial, case-insensitive match
+          }
+        }))
       });
     } else {
       recipes = await Recipe.find();
