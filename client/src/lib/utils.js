@@ -1,6 +1,5 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import axios from "axios";
 
 /**
  * Tailwind utility helper

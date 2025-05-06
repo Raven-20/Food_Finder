@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/RecipeGrid.css";
 import RecipeCard from "../components/RecipeCard";
 
-const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, favoriteRecipes }) => {
+const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
   if (isLoading) {
     return (
       <div className="loading flex items-center justify-center h-64">
@@ -23,7 +23,7 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, favoriteRecip
     );
   }
 
-  if (!recipes || !Array.isArray(recipes) || recipes.length === 0) {
+  if (!Array.isArray(recipes) || recipes.length === 0) {
     return (
       <div className="no-results text-center py-12">
         <h3 className="text-xl font-semibold">No matching recipes found</h3>
@@ -35,8 +35,8 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, favoriteRecip
   return (
     <div className="recipe-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {recipes.map((recipe, index) => {
-        const recipeId = recipe._id || recipe.id || `recipe-${index}`;
-        const recipeTitle = recipe.name || recipe.title || `Recipe ${index + 1}`;
+        const recipeId = recipe._id?.$oid || recipe._id || recipe.id || `recipe-${index}`;
+        const recipeTitle = recipe.title || recipe.name || `Recipe ${index + 1}`;
         const recipeImage = recipe.image || recipe.imageUrl || "/default-recipe.jpg";
 
         const normalizedRecipe = {
@@ -50,15 +50,12 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, favoriteRecip
           instructions: recipe.instructions ?? []
         };
 
-        console.log("Processing recipe:", normalizedRecipe);
-
         return (
           <RecipeCard
             key={recipeId}
             recipe={normalizedRecipe}
             isLoggedIn={loggedIn}
             userId={userId}
-            favoriteRecipes={favoriteRecipes} // Pass favoriteRecipes to each RecipeCard
           />
         );
       })}

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, X } from "lucide-react";
 import RecipeGrid from "../components/RecipeGrid";
 import "../styles/HomePage.css";
-import { Link } from "react-router-dom";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -33,26 +32,19 @@ const HomePage = () => {
     fetchRecipes(); // initial load
   }, []);
 
-  // New function to fetch all recipes at once
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (ingredientQuery = "") => {
     setIsSearching(true);
     try {
-      const response = await fetch("http://localhost:5000/api/recipes");
-      if (!response.ok) {
-        throw new Error("Failed to fetch recipes");
-      }
+      const url = ingredientQuery
+        ? `http://localhost:5000/api/recipes?ingredients=${encodeURIComponent(ingredientQuery)}`
+        : "http://localhost:5000/api/recipes";
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch recipes");
 
       const data = await response.json();
       setRecipes(data);
-      
-      // Initially show all recipes if no search has been performed
-      if (!hasSearched) {
-        setFilteredRecipes(data);
-      } else {
-        // Apply filtering if a search has been performed
-        filterRecipesByIngredients(data, ingredients);
-      }
-      
+      setFilteredRecipes(data);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -62,47 +54,12 @@ const HomePage = () => {
     }
   };
 
-  // New function to filter recipes based on ingredients
-  const filterRecipesByIngredients = (recipeList, ingredientsList) => {
-    if (ingredientsList.length === 0) {
-      // If no ingredients specified, show all recipes
-      setFilteredRecipes(recipeList);
-      return;
-    }
-
-    // Convert search ingredients to lowercase for case-insensitive matching
-    const lowerCaseIngredients = ingredientsList.map(ing => ing.toLowerCase());
-    
-    // Filter recipes that contain ALL the specified ingredients
-    const filtered = recipeList.filter(recipe => {
-      // Make sure recipe.ingredients exists and is an array
-      if (!recipe.ingredients || !Array.isArray(recipe.ingredients)) {
-        return false;
-      }
-      
-      // Convert recipe ingredients to lowercase for case-insensitive matching
-      const recipeIngredientsList = recipe.ingredients.map(ing => 
-        typeof ing === 'string' ? ing.toLowerCase() : 
-        (ing.name ? ing.name.toLowerCase() : '')
-      );
-      
-      // Check if ALL search ingredients are included in this recipe
-      return lowerCaseIngredients.every(ingredient => 
-        recipeIngredientsList.some(recipeIng => recipeIng.includes(ingredient))
-      );
-    });
-    
-    setFilteredRecipes(filtered);
-  };
-
   const handleAddIngredient = () => {
-    if (currentIngredient.trim() !== "" && !ingredients.includes(currentIngredient.trim())) {
-      const newIngredients = [...ingredients, currentIngredient.trim()];
-      setIngredients(newIngredients);
+    const trimmed = currentIngredient.trim();
+    if (trimmed !== "" && !ingredients.includes(trimmed)) {
+      const updated = [...ingredients, trimmed];
+      setIngredients(updated);
       setCurrentIngredient("");
-      
-      // Filter recipes whenever ingredients change
-      filterRecipesByIngredients(recipes, newIngredients);
     }
   };
 
@@ -113,21 +70,21 @@ const HomePage = () => {
   };
 
   const handleRemoveIngredient = (index) => {
-    const newIngredients = [...ingredients];
-    newIngredients.splice(index, 1);
-    setIngredients(newIngredients);
-    
-    // Filter recipes whenever ingredients change
-    filterRecipesByIngredients(recipes, newIngredients);
+    const updated = [...ingredients];
+    updated.splice(index, 1);
+    setIngredients(updated);
+
+    // Optional: re-trigger search if ingredients were previously searched
+    if (hasSearched) {
+      const query = updated.join(",");
+      fetchRecipes(query);
+    }
   };
 
   const handleSearch = () => {
     setHasSearched(true);
-    filterRecipesByIngredients(recipes, ingredients);
-  };
-
-  const handleFooterLinkClick = (path) => {
-    navigate(path);
+    const query = ingredients.join(",");
+    fetchRecipes(query);
   };
 
   const handleLogout = () => {
@@ -226,15 +183,15 @@ const HomePage = () => {
             <button onClick={handleAddIngredient}>Add</button>
             <button onClick={handleSearch} className="search-button">Search</button>
           </div>
-          
+
           {ingredients.length > 0 && (
             <div className="ingredients-tags">
               {ingredients.map((ingredient, index) => (
                 <div className="ingredient-tag" key={index}>
                   {ingredient}
-                  <X 
-                    className="remove-ingredient" 
-                    size={16} 
+                  <X
+                    className="remove-ingredient"
+                    size={16}
                     onClick={() => handleRemoveIngredient(index)}
                   />
                 </div>
