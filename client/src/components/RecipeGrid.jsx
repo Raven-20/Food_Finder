@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/RecipeGrid.css";
 import RecipeCard from "../components/RecipeCard";
 
-const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
+const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, onRemoveFavorite }) => {
   if (isLoading) {
     return (
       <div className="loading flex items-center justify-center h-64">
@@ -56,6 +56,8 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
             recipe={normalizedRecipe}
             isLoggedIn={loggedIn}
             userId={userId}
+            isFavorite={true} // ✅ Assumes all recipes here are favorites
+            onRemoveFavorite={onRemoveFavorite} // ✅ Pass to card
           />
         );
       })}

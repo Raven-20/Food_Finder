@@ -303,7 +303,9 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => 
           />
 
           <div className="recipe-meta mt-4">
-            <h1 className="recipe-title text-2xl font-bold mb-2">{combinedRecipe.title}</h1>
+            <h1 className="recipe-title text-2xl font-bold mb-2">{combinedRecipe.title}
+              {isFavorite && <Badge className="ml-2 bg-red-500 text-white">Favorited</Badge>}
+            </h1>
             <div className="flex flex-wrap items-center gap-4 mb-3">
               {combinedRecipe.prepTime > 0 && (
                 <div className="flex items-center">
