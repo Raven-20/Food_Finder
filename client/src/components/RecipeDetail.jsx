@@ -25,17 +25,20 @@ import {
 import {
   getRecipe,
   checkFavoriteStatus,
-  toggleFavoriteStatus,
 } from "../lib/utils";
-import { getRecipeDetails } from "../lib/recipeApi";
+import { getRecipeDetails, toggleFavorite } from "../lib/recipeApi";
 
-const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
+
+const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => {
   const [recipe, setRecipe] = useState(null);
   const [recipeDetails, setRecipeDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [servings, setServings] = useState(4);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     const fetchRecipeData = async () => {
@@ -44,22 +47,22 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
         const data = await getRecipe(id);
         setRecipe(data);
         setServings(data.defaultServings || 4);
-
+  
         try {
           const details = await getRecipeDetails(id);
           if (details) {
             setRecipeDetails(details);
           }
-        } catch (detailsErr) {
+        } catch {
           console.log("Note: Detailed recipe info not available, using basic data only");
         }
-
+  
         if (isLoggedIn && userId) {
           try {
             const favoriteData = await checkFavoriteStatus(userId, id);
-            setIsFavorite(favoriteData.isFavorite);
+            setIsFavorite(favoriteData?.isFavorite || false);
           } catch (favErr) {
-            console.log("Could not check favorite status");
+            console.log("Could not check favorite status:", favErr);
           }
         }
       } catch (err) {
@@ -69,22 +72,65 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
         setIsLoading(false);
       }
     };
-
+  
     fetchRecipeData();
-  }, [id, isLoggedIn, userId]);
+  }, [id, isLoggedIn, userId]);  
 
-  const toggleFavorite = async () => {
+  // Show toast message for a few seconds
+  const displayToast = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
+  const handleToggleFavorite = async () => {
     if (!isLoggedIn) {
       alert("Please log in to favorite recipes.");
       return;
     }
-
+  
     try {
-      await toggleFavoriteStatus(userId, id, isFavorite);
-      setIsFavorite(!isFavorite);
+      setFavoriteLoading(true);
+      console.log("Toggling favorite for:", { userId, id, isFavorite });
+      
+      // Use the new toggleFavorite function from recipeApi.js
+      const result = await toggleFavorite(userId, id, !isFavorite);
+      
+      if (result.success) {
+        const newFavoriteStatus = !isFavorite;
+        setIsFavorite(newFavoriteStatus);
+        
+        // Display appropriate toast message
+        if (newFavoriteStatus) {
+          displayToast("Successfully added to Favorites!");
+        } else {
+          displayToast("Removed from Favorites");
+        }
+      
+        // Notify parent/global store to add/remove recipe
+        if (typeof onFavoriteUpdate === 'function') {
+          onFavoriteUpdate({
+            recipeId: id,
+            isFavorite: newFavoriteStatus,
+            recipeSummary: {
+              id,
+              title: recipe?.title,
+              image: recipe?.image,
+              prepTime: recipe?.prepTime,
+              cookTime: recipe?.cookTime,
+            },
+          });
+        }
+      } else {
+        throw new Error(result.message || "Failed to update favorite status");
+      }      
     } catch (err) {
       console.error("Error toggling favorite:", err);
-      alert("Failed to update favorite status");
+      displayToast("Failed to update favorite status. Please try again.");
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -153,14 +199,32 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose }) => {
   });
 
   return (
-    <div className="recipe-detail">
+    <div className="recipe-detail relative">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="toast-message fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-md flex items-center z-50 animate-fade-in">
+          <Check className="h-5 w-5 mr-2" />
+          {toastMessage}
+        </div>
+      )}
+
       <div className="recipe-detail-header mb-4 flex justify-between items-center">
         <Button variant="ghost" onClick={onClose}>
           <ChevronLeft className="h-5 w-5 mr-1" /> Back
         </Button>
         <div className="recipe-actions flex gap-2">
-          <Button variant="outline" size="icon" onClick={toggleFavorite} className={isFavorite ? "text-red-500" : ""}>
-            <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleToggleFavorite} 
+            className={isFavorite ? "text-red-500" : ""}
+            disabled={favoriteLoading}
+          >
+            {favoriteLoading ? (
+              <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+            ) : (
+              <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
+            )}
           </Button>
           <Button variant="outline" size="icon" onClick={shareRecipe}>
             <Share2 className="h-5 w-5" />

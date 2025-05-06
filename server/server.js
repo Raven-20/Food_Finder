@@ -2,8 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+
 const recipeRoutes = require('./routes/recipes');
 const userRoutes = require('./routes/users');
+const favoriteRoutes = require('./routes/favorites'); // ✅ Updated favorites route
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -13,39 +16,40 @@ const User = require('./models/User');
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.json()); // Modern replacement for bodyParser.json()
+app.use(bodyParser.json()); // Legacy compatibility
+app.use(express.json());    // Preferred modern usage
 
-// Mount routes WITH /api prefix
+// Mount API routes
 app.use('/api', userRoutes);
 app.use('/api/recipes', recipeRoutes);
+app.use('/api', favoriteRoutes); // ✅ /api/recipes/:id/favorite and /api/favorites/:userId
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/foodfinder", {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log("MongoDB connection error:", err));
+  .catch(err => console.error("MongoDB connection error:", err));
 
-// Make models available to route files
+// Set models for potential access in route files
 app.set('models', {
   User,
   Recipe
 });
 
-// Root API route for health check
+// API root for testing
 app.get("/api", (req, res) => {
   res.json({ message: "Food Finder API is running" });
 });
 
-// Error handling middleware
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });
 });
 
-// Server listening on a port
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

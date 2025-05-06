@@ -1,4 +1,3 @@
-// server/models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -13,7 +12,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  // Add any other fields you need
+
+  // Added favorites reference (linked to Recipe model)
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Recipe'
+  }],
+
+  // Added saved recipes reference (linked to Recipe model)
+  savedRecipes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Recipe'
+  }],
+
   createdAt: {
     type: Date,
     default: Date.now

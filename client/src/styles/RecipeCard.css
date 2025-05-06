@@ -81,6 +81,25 @@
   border-top: 1px solid #e5e7eb;
 }
 
+/* Heart Icon (Favorite) */
+.heart-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 15;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.heart-icon:hover {
+  color: #e0245e; /* Heart color on hover */
+}
+
+/* Heart icon filled (favorited) */
+.heart-icon.favorited {
+  color: #e0245e; /* Pinkish color indicating favorited */
+}
+
 /* Modal styles - center and responsive */
 .recipe-detail-modal {
   position: fixed !important;

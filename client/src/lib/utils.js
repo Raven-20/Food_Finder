@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import axios from "axios";
 
 /**
  * Tailwind utility helper
@@ -114,26 +115,13 @@ export const checkSavedStatus = async (userId, recipeId) => {
   return fetchApi(`/api/users/${userId}/saved?recipeId=${recipeId}`);
 };
 
-/**
- * Toggle recipe favorite status
- * Used in: RecipeDetail.jsx
- */
-export const toggleFavoriteStatus = async (userId, recipeId, isFavorite) => {
-  const method = isFavorite ? "DELETE" : "POST";
-  return fetchApi(`/api/users/${userId}/favorites`, {
-    method,
-    body: { recipeId },
-  });
-};
+/** Toggle recipe favorite status */
+export const toggleFavoriteStatus = async (userId, recipeId, isCurrentlyFavorite) => {
+  const method = isCurrentlyFavorite ? "DELETE" : "POST";
+  const url = "/api/favorites";
 
-/**
- * Toggle recipe saved status
- * Used in: RecipeDetail.jsx
- */
-export const toggleSavedStatus = async (userId, recipeId, isSaved) => {
-  const method = isSaved ? "DELETE" : "POST";
-  return fetchApi(`/api/users/${userId}/saved`, {
+  return fetchApi(url, {
     method,
-    body: { recipeId },
+    body: { userId, recipeId },
   });
 };

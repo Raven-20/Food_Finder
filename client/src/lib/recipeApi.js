@@ -1,13 +1,9 @@
 // lib/recipeApi.js
 
-// Define the base URL for your API
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' // In production, use relative path
-  : 'http://localhost:5000/api'; // Use your local backend server
+  ? '/api'
+  : 'http://localhost:5000/api';
 
-/**
- * Helper function to handle API responses consistently
- */
 async function handleApiResponse(response, errorMessage) {
   if (!response.ok) {
     let errorData;
@@ -21,9 +17,6 @@ async function handleApiResponse(response, errorMessage) {
   return await response.json();
 }
 
-/**
- * Get all recipes
- */
 export async function fetchAllRecipes() {
   try {
     const response = await fetch(`${API_BASE_URL}/recipes`);
@@ -34,9 +27,6 @@ export async function fetchAllRecipes() {
   }
 }
 
-/**
- * Get a recipe by its ID
- */
 export async function getRecipeById(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/recipes/${id}`);
@@ -47,11 +37,6 @@ export async function getRecipeById(id) {
   }
 }
 
-/**
- * Fetches detailed recipe information from the API
- * @param {string} recipeId - ID of the recipe to fetch
- * @returns {Promise<Object>} - Promise resolving to recipe details
- */
 export const getRecipeDetails = async (recipeId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/details`);
@@ -62,9 +47,71 @@ export const getRecipeDetails = async (recipeId) => {
   }
 };
 
-// Export all functions as a default object as well for convenience
+// ✅ Updated toggleFavorite to match backend route: POST /recipes/:id/favorite
+export const toggleFavorite = async (userId, recipeId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/favorite`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    return await handleApiResponse(response, "Failed to update favorite status");
+  } catch (error) {
+    console.error('Error toggling favorite:', error);
+    throw error;
+  }
+};
+
+export const getUserFavorites = async (userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/favorites/${userId}`);
+    return await handleApiResponse(response, "Failed to fetch favorites");
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    throw error;
+  }
+};
+
+export const getFavoriteRecipes = async (userId) => {
+  try {
+    const favorites = await getUserFavorites(userId);
+    
+    if (!favorites || !favorites.length) {
+      return [];
+    }
+
+    const response = await fetch(`${API_BASE_URL}/recipes/batch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ids: favorites.map(fav => fav.recipeId)
+      }),
+    });
+
+    return await handleApiResponse(response, "Failed to fetch favorite recipes");
+
+    /*
+    // Alternative if batch fetching is not supported
+    const recipePromises = favorites.map(fav => getRecipeById(fav.recipeId));
+    const recipes = await Promise.all(recipePromises);
+    return recipes;
+    */
+  } catch (error) {
+    console.error('Error fetching favorite recipes:', error);
+    throw error;
+  }
+};
+
 export default {
   fetchAllRecipes,
   getRecipeById,
   getRecipeDetails,
+  toggleFavorite,
+  getUserFavorites,
+  getFavoriteRecipes,
 };

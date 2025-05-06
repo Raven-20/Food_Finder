@@ -1,19 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/RecipeCard.css";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "../components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Clock, Eye } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-} from "../components/ui/dialog";
+import { Clock, Eye, Heart } from "lucide-react";
+import { Dialog, DialogContent } from "../components/ui/dialog";
 import RecipeDetail from "../components/RecipeDetail";
+import { toggleFavorite } from "../lib/recipeApi"; // Assuming this function toggles the favorite status in the backend
 
 const RecipeCard = ({
   id,
@@ -25,6 +18,7 @@ const RecipeCard = ({
   isLoggedIn = false,
   userId = "",
   recipe = {},
+  favoriteRecipes = [],
 }) => {
   // Fallback and merging values
   const recipeId = recipe.id || id;
@@ -35,9 +29,25 @@ const RecipeCard = ({
   const recipeTags = recipe.dietaryTags || dietaryTags;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(favoriteRecipes.includes(recipeId)); // Check if the recipe is in favorites
 
   const openRecipeDetails = () => setIsModalOpen(true);
   const closeRecipeDetails = () => setIsModalOpen(false);
+
+  // Toggle the favorite status
+  const handleFavoriteClick = async () => {
+    try {
+      const updatedFavoriteStatus = !isFavorite;
+      await toggleFavorite(userId, recipeId, updatedFavoriteStatus); // Toggle favorite status on the backend
+      setIsFavorite(updatedFavoriteStatus); // Update the local state
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+    }
+  };
+
+  useEffect(() => {
+    setIsFavorite(favoriteRecipes.includes(recipeId)); // Update the favorite status when the favorites list changes
+  }, [favoriteRecipes, recipeId]);
 
   return (
     <>
@@ -87,14 +97,22 @@ const RecipeCard = ({
         </CardContent>
 
         <CardFooter className="card-footer">
-          <Button
-            onClick={openRecipeDetails}
-            className="flex items-center gap-1 w-full"
-            variant="secondary"
-          >
-            <Eye className="h-4 w-4" />
-            View Recipe
-          </Button>
+          <div className="flex justify-between items-center w-full">
+            <Button
+              onClick={openRecipeDetails}
+              className="flex items-center gap-1"
+              variant="secondary"
+            >
+              <Eye className="h-4 w-4" />
+              View Recipe
+            </Button>
+            <button
+              onClick={handleFavoriteClick}
+              className={`heart-icon ${isFavorite ? "filled" : ""}`}
+            >
+              <Heart className="h-5 w-5" />
+            </button>
+          </div>
         </CardFooter>
       </Card>
 
