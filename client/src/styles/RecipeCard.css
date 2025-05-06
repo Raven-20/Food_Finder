@@ -84,15 +84,9 @@
 /* Heart Icon (Favorite) */
 .heart-icon {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
   z-index: 15;
   cursor: pointer;
   transition: color 0.2s ease;
-}
-
-.heart-icon:hover {
-  color: #e0245e; /* Heart color on hover */
 }
 
 /* Heart icon filled (favorited) */
