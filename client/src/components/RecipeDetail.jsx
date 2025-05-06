@@ -140,67 +140,65 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => 
     setServings(prev => Math.max(1, prev + (increase ? 1 : -1)));
   };
 
-  // Replace your existing printRecipe function with the following:
-const saveRecipeAsPDF = () => {
-  const doc = new jsPDF();
+  // Updated to use regular ingredients instead of scaled ingredients
+  const saveRecipeAsPDF = () => {
+    const doc = new jsPDF();
 
-  // Title and Image
-  doc.setFontSize(18);
-  doc.text(combinedRecipe.title, 20, 20);
-  const img = new Image();
-  img.src = combinedRecipe.image || "/placeholder-recipe.jpg";
-  img.onload = () => {
-    doc.addImage(img, 'JPEG', 20, 30, 180, 100);
+    // Title and Image
+    doc.setFontSize(18);
+    doc.text(combinedRecipe.title, 20, 20);
+    const img = new Image();
+    img.src = combinedRecipe.image || "/placeholder-recipe.jpg";
+    img.onload = () => {
+      doc.addImage(img, 'JPEG', 20, 30, 180, 100);
 
-    // Recipe Details
-    doc.setFontSize(12);
-    doc.text(`Prep Time: ${combinedRecipe.prepTime} mins`, 20, 140);
-    doc.text(`Cook Time: ${combinedRecipe.cookTime} mins`, 20, 150);
-    doc.text(`Difficulty: ${combinedRecipe.difficulty}`, 20, 160);
+      // Recipe Details
+      doc.setFontSize(12);      
+      doc.text(`Difficulty: ${combinedRecipe.difficulty}`, 20, 160);
 
-    // Ingredients
-    doc.text("Ingredients:", 20, 170);
-    let yPos = 180;
-    scaledIngredients?.forEach((ingredient, idx) => {
-      const ingredientText = `${ingredient.scaledAmount.toFixed(1).replace(/\.0$/, "")} ${ingredient.unit} ${ingredient.name}`;
-      doc.text(ingredientText, 20, yPos);
+      // Ingredients
+      doc.text("Ingredients:", 20, 170);
+      let yPos = 180;
+      combinedRecipe.ingredients?.forEach((ingredient, idx) => {
+        const ingredientText = `${ingredient.amount} ${ingredient.unit} ${ingredient.name}`;
+        doc.text(ingredientText, 20, yPos);
+        yPos += 10;
+      });
+
+      // Instructions
+      doc.text("Instructions:", 20, yPos);
       yPos += 10;
-    });
+      combinedRecipe.instructions?.forEach((stepObj, idx) => {
+        const stepText = typeof stepObj === "string" ? stepObj : stepObj.description;
+        doc.text(`${idx + 1}. ${stepText}`, 20, yPos);
+        yPos += 10;
+      });
 
-    // Instructions
-    doc.text("Instructions:", 20, yPos);
-    yPos += 10;
-    combinedRecipe.instructions?.forEach((stepObj, idx) => {
-      const stepText = typeof stepObj === "string" ? stepObj : stepObj.description;
-      doc.text(`${idx + 1}. ${stepText}`, 20, yPos);
-      yPos += 10;
-    });
-
-    // Save the PDF
-    doc.save(`${combinedRecipe.title}.pdf`);
+      // Save the PDF
+      doc.save(`${combinedRecipe.title}.pdf`);
+    };
   };
-};
 
-const shareRecipe = async () => {
-  const url = window.location.href;
+  const shareRecipe = async () => {
+    const url = window.location.href;
 
-  // Copy the URL to clipboard
-  try {
-    await navigator.clipboard.writeText(url);
-    displayToast("Link copied to clipboard!");
-  } catch (err) {
-    console.error("Clipboard copy failed:", err);
-    alert("Failed to copy link.");
-  }
+    // Copy the URL to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+      displayToast("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Clipboard copy failed:", err);
+      alert("Failed to copy link.");
+    }
 
-  // Open Facebook Messenger share
-  const messengerShareUrl = `https://www.facebook.com/dialog/send?` +
-    `link=${encodeURIComponent(url)}` +
-    `&app_id=YOUR_FACEBOOK_APP_ID` +
-    `&redirect_uri=${encodeURIComponent(url)}`;
+    // Open Facebook Messenger share
+    const messengerShareUrl = `https://www.facebook.com/dialog/send?` +
+      `link=${encodeURIComponent(url)}` +
+      `&app_id=YOUR_FACEBOOK_APP_ID` +
+      `&redirect_uri=${encodeURIComponent(url)}`;
 
-  window.open(messengerShareUrl, "_blank");
-};
+    window.open(messengerShareUrl, "_blank");
+  };
 
 
   if (isLoading) {
@@ -232,17 +230,6 @@ const shareRecipe = async () => {
     notes: recipeDetails?.notes || "",
     nutritionInfo: recipeDetails?.nutritionInfo || {},
   };
-
-  const scaledIngredients = combinedRecipe.ingredients?.map((ingredient) => {
-    if (typeof ingredient.amount === "number") {
-      return {
-        ...ingredient,
-        scaledAmount:
-          (ingredient.amount / combinedRecipe.defaultServings) * servings,
-      };
-    }
-    return ingredient;
-  });
 
   return (
     <div className="recipe-detail relative">
@@ -324,39 +311,11 @@ const shareRecipe = async () => {
                   <span className="text-sm">{combinedRecipe.prepTime} mins prep</span>
                 </div>
               )}
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 text-gray-500 mr-1" />
-                <span className="text-sm">{combinedRecipe.cookTime} mins cook</span>
-              </div>
-              {combinedRecipe.difficulty && (
-                <div className="flex items-center">
-                  <Utensils className="h-4 w-4 text-gray-500 mr-1" />
-                  <span className="text-sm">{combinedRecipe.difficulty}</span>
-                </div>
-              )}
+              
+              
             </div>
-            <div className="flex items-center mb-3">
-              <Users className="h-4 w-4 text-gray-500 mr-1" />
-              <div className="servings-control flex items-center">
-                <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={() => adjustServings(false)} disabled={servings <= 1}>
-                  <MinusCircle className="h-4 w-4" />
-                </Button>
-                <span className="text-sm mx-2">{servings} servings</span>
-                <Button variant="ghost" size="icon" className="h-6 w-6 p-0" onClick={() => adjustServings(true)}>
-                  <PlusCircle className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {combinedRecipe.dietaryTags?.length > 0 && (
-              <div className="tags flex flex-wrap gap-1 mb-4">
-                {combinedRecipe.dietaryTags.map((tag, index) => (
-                  <Badge key={index} variant="outline">{tag}</Badge>
-                ))}
-              </div>
-            )}
-            {combinedRecipe.description && (
-              <p className="recipe-description text-gray-700 mb-4">{combinedRecipe.description}</p>
-            )}
+            
+            
           </div>
         </div>
 
@@ -370,12 +329,10 @@ const shareRecipe = async () => {
             <TabsContent value="ingredients" className="mt-4">
               <div className="h-[400px] overflow-y-auto pr-4">
                 <ul className="ingredients-list space-y-2">
-                  {scaledIngredients?.map((ingredient, idx) => (
+                  {combinedRecipe.ingredients?.map((ingredient, idx) => (
                     <li key={idx} className="ingredient-item flex items-start py-1">
                       <div className="ingredient-amount min-w-[80px] text-sm">
-                        {typeof ingredient.scaledAmount === "number"
-                          ? ingredient.scaledAmount.toFixed(1).replace(/\.0$/, "")
-                          : ingredient.amount} {ingredient.unit}
+                        {ingredient.amount} {ingredient.unit}
                       </div>
                       <div className="ingredient-name">{ingredient.name}</div>
                     </li>

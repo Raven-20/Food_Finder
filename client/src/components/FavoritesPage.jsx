@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import RecipeGrid from "../components/RecipeGrid";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const FavoritesPage = () => {
+  const navigate = useNavigate();
   const [favoriteRecipes, setFavoriteRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +31,10 @@ const FavoritesPage = () => {
 
   return (
     <div className="favorites-page">
+      <button className="back-button" onClick={() => navigate(-1)}>
+          <ArrowLeft />
+          <span>Back</span>
+        </button>
       <h2>Your Favorite Recipes</h2>
       {error && <p className="error">{error}</p>}
       <RecipeGrid

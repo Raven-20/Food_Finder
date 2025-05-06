@@ -60,9 +60,7 @@ const RecipeCard = ({
           />
           {typeof recipeMatch === "number" && recipeMatch > 0 && (
             <div className="match-badge">
-              <Badge className="match-badge-content">
-                {recipeMatch}% Match
-              </Badge>
+              
             </div>
           )}
         </CardHeader>

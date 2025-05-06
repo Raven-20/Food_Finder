@@ -1,155 +1,108 @@
-/* Base card styles */
+/* RecipeCard.css */
+
 .recipe-card {
-  width: 100%;
-  max-width: 350px;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
   overflow: hidden;
-  background-color: white;
-  transition: all 0.3s ease;
-  border-radius: 0.5rem;
-  display: flex;
-  flex-direction: column;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .recipe-card:hover {
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
-/* Image container with positioning */
 .image-container {
   position: relative;
-  height: 12rem;
   overflow: hidden;
-  padding: 0 !important;
 }
 
-/* Recipe image hover zoom effect */
 .recipe-image {
   width: 100%;
-  height: 100%;
+  height: 180px;
   object-fit: cover;
-  transition: transform 0.3s ease;
-  display: block;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.4s ease;
 }
 
-.recipe-image:hover {
+.recipe-card:hover .recipe-image {
   transform: scale(1.05);
 }
 
-/* Match badge styles */
+.recipe-name-banner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(15, 32, 39, 0.9), rgba(15, 32, 39, 0));
+  padding: 0.5rem 1rem;
+}
+
+.recipe-title {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
 .match-badge {
-  position: relative;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 10;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
 }
 
 .match-badge-content {
-  background-color: #22c55e; /* Tailwind green-500 */
+  background: linear-gradient(135deg, #ff6ec4, #7873f5);
   color: white;
   font-weight: 500;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  border-radius: 12px;
+  padding: 0.25rem 0.6rem;
   font-size: 0.75rem;
-  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.match-badge-content:hover,
-.match-badge-content:focus {
-  background-color: #16a34a; /* Tailwind green-600 */
-}
-
-/* Content inside the card */
 .card-content {
   padding: 1rem;
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
+.card-content .text-gray-500,
+.card-content .text-gray-600 {
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
-/* Footer section */
+.tags .badge,
+.tags .text-xs {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.2rem 0.5rem;
+}
+
 .card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
 }
 
-/* Heart Icon (Favorite) */
-.heart-icon {
-  position: absolute;
-  z-index: 15;
-  cursor: pointer;
-  transition: color 0.2s ease;
+.card-footer .button {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: background 0.3s ease;
 }
 
-/* Heart icon filled (favorited) */
-.heart-icon.favorited {
-  color: #e0245e; /* Pinkish color indicating favorited */
+.card-footer .button:hover {
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
 }
 
-/* Modal styles - center and responsive */
 .recipe-detail-modal {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: 100% !important;
-  max-width: 800px !important;
-  max-height: 90vh !important;
-  margin: 0 !important;
-  background-color: white !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-  z-index: 50 !important;
-  overflow: hidden !important;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Ensures modal overlay covers screen */
-[data-radix-popper-content-wrapper] {
-  position: fixed !important;
-  inset: 0 !important;
-}
-
-/* Scrollable modal content */
-.modal-content {
-  max-height: calc(90vh - 80px);
-  overflow-y: auto;
-  padding: 0 1rem 1rem;
-}
-
-/* Sticky modal header */
-.modal-header {
-  position: sticky;
-  top: 0;
-  background: white;
-  padding: 1rem 1rem 0;
-  z-index: 10;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Modal backdrop effect */
-[data-radix-portal] [data-state="open"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  animation: fadeIn 0.2s ease;
-}
-
-/* Simple fade-in animation */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  background-color: #1f1f1f;
+  border-radius: 16px;
+  padding: 1.5rem;
+  color: #ffffff;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
