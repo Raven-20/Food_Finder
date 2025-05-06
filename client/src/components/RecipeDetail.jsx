@@ -27,6 +27,8 @@ import {
   checkFavoriteStatus,
 } from "../lib/utils";
 import { getRecipeDetails, toggleFavorite } from "../lib/recipeApi";
+import { jsPDF } from "jspdf"; // Import jsPDF\
+import { FaFacebook, FaLink } from "react-icons/fa";
 
 
 const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => {
@@ -138,24 +140,68 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => 
     setServings(prev => Math.max(1, prev + (increase ? 1 : -1)));
   };
 
-  const printRecipe = () => window.print();
+  // Replace your existing printRecipe function with the following:
+const saveRecipeAsPDF = () => {
+  const doc = new jsPDF();
 
-  const shareRecipe = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: recipe?.title,
-          text: `Check out this recipe: ${recipe?.title}`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.error("Error sharing:", err);
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
-    }
+  // Title and Image
+  doc.setFontSize(18);
+  doc.text(combinedRecipe.title, 20, 20);
+  const img = new Image();
+  img.src = combinedRecipe.image || "/placeholder-recipe.jpg";
+  img.onload = () => {
+    doc.addImage(img, 'JPEG', 20, 30, 180, 100);
+
+    // Recipe Details
+    doc.setFontSize(12);
+    doc.text(`Prep Time: ${combinedRecipe.prepTime} mins`, 20, 140);
+    doc.text(`Cook Time: ${combinedRecipe.cookTime} mins`, 20, 150);
+    doc.text(`Difficulty: ${combinedRecipe.difficulty}`, 20, 160);
+
+    // Ingredients
+    doc.text("Ingredients:", 20, 170);
+    let yPos = 180;
+    scaledIngredients?.forEach((ingredient, idx) => {
+      const ingredientText = `${ingredient.scaledAmount.toFixed(1).replace(/\.0$/, "")} ${ingredient.unit} ${ingredient.name}`;
+      doc.text(ingredientText, 20, yPos);
+      yPos += 10;
+    });
+
+    // Instructions
+    doc.text("Instructions:", 20, yPos);
+    yPos += 10;
+    combinedRecipe.instructions?.forEach((stepObj, idx) => {
+      const stepText = typeof stepObj === "string" ? stepObj : stepObj.description;
+      doc.text(`${idx + 1}. ${stepText}`, 20, yPos);
+      yPos += 10;
+    });
+
+    // Save the PDF
+    doc.save(`${combinedRecipe.title}.pdf`);
   };
+};
+
+const shareRecipe = async () => {
+  const url = window.location.href;
+
+  // Copy the URL to clipboard
+  try {
+    await navigator.clipboard.writeText(url);
+    displayToast("Link copied to clipboard!");
+  } catch (err) {
+    console.error("Clipboard copy failed:", err);
+    alert("Failed to copy link.");
+  }
+
+  // Open Facebook Messenger share
+  const messengerShareUrl = `https://www.facebook.com/dialog/send?` +
+    `link=${encodeURIComponent(url)}` +
+    `&app_id=YOUR_FACEBOOK_APP_ID` +
+    `&redirect_uri=${encodeURIComponent(url)}`;
+
+  window.open(messengerShareUrl, "_blank");
+};
+
 
   if (isLoading) {
     return (
@@ -226,10 +272,29 @@ const RecipeDetail = ({ id, isLoggedIn, userId, onClose, onFavoriteUpdate }) => 
               <Heart className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} />
             )}
           </Button>
-          <Button variant="outline" size="icon" onClick={shareRecipe}>
-            <Share2 className="h-5 w-5" />
+          {/* Copy Link Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard!");
+            }}>
+            <FaLink className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" onClick={printRecipe}>
+
+          {/* Share to Facebook Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              const shareUrl = encodeURIComponent(window.location.href);
+              const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+              window.open(facebookUrl, "_blank", "noopener,noreferrer");
+            }}>
+            <FaFacebook className="h-5 w-5 text-blue-600" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={saveRecipeAsPDF}>
             <Printer className="h-5 w-5" />
           </Button>
         </div>
