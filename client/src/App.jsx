@@ -9,6 +9,7 @@ import AboutPage from "./components/AboutPage";
 import ContactPage from "./components/ContactPage";
 import PrivacyPage from "./components/PrivacyPage";
 import TermsPage from "./components/TermsPage";
+import FavoritesPage from "./components/FavoritesPage";
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
       </Routes>
     </Router>
   );

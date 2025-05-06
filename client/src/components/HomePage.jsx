@@ -188,6 +188,7 @@ const HomePage = () => {
                 {isModalOpen && (
                   <div className="profile-modal">
                     <p>{userEmail}</p>
+                    <button onClick={() => navigate("/favorites")}>Favorites</button>
                     <button onClick={() => alert("Settings modal placeholder")}>Settings</button>
                     <button onClick={handleLogout}>Sign Out</button>
                   </div>

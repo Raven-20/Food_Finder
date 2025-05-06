@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/RecipeGrid.css";
 import RecipeCard from "../components/RecipeCard";
 
-const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
+const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId, favoriteRecipes }) => {
   if (isLoading) {
     return (
       <div className="loading flex items-center justify-center h-64">
@@ -58,6 +58,7 @@ const RecipeGrid = ({ recipes, isLoading, error, loggedIn, userId }) => {
             recipe={normalizedRecipe}
             isLoggedIn={loggedIn}
             userId={userId}
+            favoriteRecipes={favoriteRecipes} // Pass favoriteRecipes to each RecipeCard
           />
         );
       })}
