@@ -91,7 +91,10 @@ const HomePage = () => {
     localStorage.clear();
     setUserEmail("");
     setIsModalOpen(false);
+    // First navigate to home page
     navigate("/");
+    // Then refresh the entire page to ensure a complete reset
+    window.location.reload();
   };
 
   const renderRecipeGrid = () => {
