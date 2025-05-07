@@ -47,7 +47,7 @@ export const getRecipeDetails = async (recipeId) => {
   }
 };
 
-// ✅ Updated toggleFavorite to match backend route: POST /recipes/:id/favorite
+// toggleFavorite to match backend route: POST /recipes/:id/favorite
 export const toggleFavorite = async (userId, recipeId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}/favorite`, {
@@ -95,12 +95,7 @@ export const getFavoriteRecipes = async (userId) => {
 
     return await handleApiResponse(response, "Failed to fetch favorite recipes");
 
-    /*
-    // Alternative if batch fetching is not supported
-    const recipePromises = favorites.map(fav => getRecipeById(fav.recipeId));
-    const recipes = await Promise.all(recipePromises);
-    return recipes;
-    */
+    
   } catch (error) {
     console.error('Error fetching favorite recipes:', error);
     throw error;

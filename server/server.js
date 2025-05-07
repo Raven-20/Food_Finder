@@ -5,7 +5,7 @@ const cors = require("cors");
 
 const recipeRoutes = require('./routes/recipes');
 const userRoutes = require('./routes/users');
-const favoriteRoutes = require('./routes/favorites'); // ✅ Updated favorites route
+const favoriteRoutes = require('./routes/favorites'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;

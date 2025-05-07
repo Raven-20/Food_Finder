@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const recipeSchema = new mongoose.Schema({
-  id: { type: String }, // Optional: consider using mongoose default _id unless this serves a specific purpose
+  id: { type: String }, 
   title: { type: String, required: true },
   image: { type: String },
   matchPercentage: { type: Number },
