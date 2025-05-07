@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import "../styles/Pages.css"; // You'll need to create this CSS file
+import "../styles/Pages.css"; 
 
 const PrivacyPage = () => {
   const navigate = useNavigate();

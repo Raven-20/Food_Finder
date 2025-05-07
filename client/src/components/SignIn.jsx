@@ -5,7 +5,7 @@ import "../styles/Auth.css";
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false); 
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -34,7 +34,7 @@ const SignIn = () => {
   // Close modal and optionally redirect after successful login
   const closeModal = () => {
     setShowModal(false);
-    window.location.href = "/"; // Change this if needed
+    window.location.href = "/"; 
   };
 
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, MapPin, Send } from "lucide-react";
-import "../styles/Pages.css"; // You'll need to create this CSS file
+import "../styles/Pages.css"; 
 
 const ContactPage = () => {
   const navigate = useNavigate();
@@ -20,10 +20,10 @@ const ContactPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real app, you'd send this data to your backend
+    
     console.log("Form data submitted:", formData);
     setIsSubmitted(true);
-    // Reset form after "submission"
+    
     setTimeout(() => {
       setFormData({
         name: "",
